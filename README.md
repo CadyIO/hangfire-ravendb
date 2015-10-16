@@ -1,9 +1,3 @@
-This is a work on progress! Don't use it yet.
-
-
-Hangfire 
-=========
-
 Usage
 --------
 
@@ -42,15 +36,6 @@ var id = BackgroundJob.Enqueue(() => Console.WriteLine("Hello, "));
 BackgroundJob.ContinueWith(id, () => Console.WriteLine("world!"));
 ```
 
-Questions? Problems?
----------------------
-
-Open-source project are developing more smoothly, when all discussions are held in public.
-
-If you have any questions, problems related to the Hangfire usage or want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
-
-If you've discovered a bug, please report it to the [Hangfire GitHub Issues](https://github.com/odinserj/Hangfire/issues?state=open). Detailed reports with stack traces, actual and expected behavours are welcome. 
-
 License
 --------
 
@@ -68,12 +53,3 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
-
-Legal
-------
-
-By submitting a Pull Request, you disavow any rights or claims to any changes submitted to the Hangfire project and assign the copyright of those changes to Sergey Odinokov.
-
-If you cannot or do not want to reassign those rights (your employment contract for your employer may not allow this), you should not submit a PR. Open an issue and someone else can do the work.
-
-This is a legal way of saying "If you submit a PR to us, that code becomes ours". 99.9% of the time that's what you intend anyways; we hope it doesn't scare you away from contributing.
