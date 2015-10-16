@@ -13,7 +13,7 @@ namespace ConsoleSample
             // you can use Raven Storage and specify the connection string and database name
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
-                .UseRavenStorage("http://localhost:9090", "hangfire2");
+                .UseRavenStorage("http://localhost:9090", "hangfire");
 
             // you can use Raven Embedded Storage which runs in memory!
             //GlobalConfiguration.Configuration
