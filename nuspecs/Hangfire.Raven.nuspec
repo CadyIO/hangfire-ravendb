@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <dependencies>
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
+    <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" />
+  </files>
+</package>
