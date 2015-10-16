@@ -14,6 +14,8 @@ GlobalConfiguration.Configuration.UseEmbeddedRavenStorage();
 To enqueue a background job you must have the following in the code somewhere at least once or the background job queue will not process
 ```csharp
 var client = new BackgroundJobServer();
+\\then you can do this, which runs once
+BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world!"));
 ```
 
 [**Delayed tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/calling-methods-with-delay.html)
