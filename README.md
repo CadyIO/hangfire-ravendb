@@ -11,6 +11,11 @@ This is how you connect to an embedded ravendb instance
 GlobalConfiguration.Configuration.UseEmbeddedRavenStorage();
 ```
 
+To enqueue a background job you must have the following in the code somewhere at least once or the background job queue will not process
+```csharp
+var client = new BackgroundJobServer();
+```
+
 [**Delayed tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/calling-methods-with-delay.html)
 
 Scheduled background jobs are being executed only after given amount of time.
