@@ -70,7 +70,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.Raven.csproj">
+    <ProjectReference Include="..\Hangfire.Raven\Hangfire.Raven.csproj">
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>Hangfire.Raven</Name>
     </ProjectReference>
