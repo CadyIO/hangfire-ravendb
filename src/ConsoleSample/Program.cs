@@ -31,7 +31,7 @@ namespace ConsoleSample
             Console.ReadLine();
         }
 
-        [AutomaticRetry(Attempts = 10, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
+        [AutomaticRetry(Attempts = 2, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         public static void test()
         {
             Console.WriteLine($"{x++} Cron Job: Hello, world!");
