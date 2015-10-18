@@ -203,6 +203,17 @@ namespace Hangfire.Raven
             using (var repository = new Repository()) {
                 var jobParameter = repository.Session.Query<JobParameter>().FirstOrDefault(t => t.JobId == id && t.Name == name);
 
+                if (jobParameter == null && name == "RetryCount") {
+                    jobParameter = new JobParameter
+                    {
+                        JobId = id,
+                        Name = name,
+                        Value = "0"
+                    };
+
+                    repository.Save(jobParameter);
+                }
+
                 return jobParameter != null ? jobParameter.Value : null;
             }
         }

@@ -23,16 +23,19 @@ namespace ConsoleSample
             //you have to create an instance of background job server at least once for background jobs to run
             var client = new BackgroundJobServer();
 
-            BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world!"));
-            RecurringJob.AddOrUpdate(() => test(), Cron.Minutely);
+            //BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world!"));
+            BackgroundJob.Enqueue(() => test());
+            //RecurringJob.AddOrUpdate(() => test(), Cron.Minutely);
 
             Console.WriteLine("Press Enter to exit...");
             Console.ReadLine();
         }
 
+        [AutomaticRetry(Attempts = 10, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         public static void test()
         {
             Console.WriteLine($"{x++} Cron Job: Hello, world!");
+            throw new ArgumentException("fail");
         }
     }
 }
