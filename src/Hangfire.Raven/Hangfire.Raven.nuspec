@@ -1,0 +1,29 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$title$</title>
+        <description>$description$</description>
+        <authors>Axial Commerce</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <copyright>Copyright © Axial Commerce</copyright>
+        <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+        <projectUrl>https://github.com/axial/hangfire-ravendb</projectUrl>
+        <dependencies>
+            <group targetFramework="net45">
+                <dependency id="Dewey.Net" version="2.7.8.0" />
+                <dependency id="Hangfire" version="1.5.0" />
+                <dependency id="Hangfire.Core" version="1.5.0" />
+                <dependency id="Hangfire.SqlServer" version="1.5.0" />
+                <dependency id="Microsoft.Owin" version="3.0.0" />
+                <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
+                <dependency id="Newtonsoft.Json" version="7.0.1" />
+                <dependency id="Owin" version="1.0" />
+                <dependency id="RavenDB.Client" version="3.0.3800" />
+                <dependency id="RavenDB.Database" version="3.0.3800" />
+                <dependency id="RavenDB.Embedded" version="3.0.3800" />
+            </group>
+        </dependencies>
+    </metadata>
+</package>
