@@ -42,11 +42,11 @@ namespace Hangfire.Raven.DistributedLock
 
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>());
 
-        private static RavenStorage _storage;
-        private static string _resource;
-        private static RavenStorageOptions _options;
+        private RavenStorage _storage;
+        private string _resource;
+        private RavenStorageOptions _options;
 
-        private static Timer _heartbeatTimer = null;
+        private Timer _heartbeatTimer = null;
 
         private bool _completed;
 
@@ -92,10 +92,10 @@ namespace Hangfire.Raven.DistributedLock
             AcquiredLocks.Value.Remove(_resource);
         }
 
-        internal static void Acquire(string resource, TimeSpan timeout)
+        internal void Acquire(string resource, TimeSpan timeout)
         {
             try {
-                RemoveDeadLocks();
+                RemoveDeadLocks(resource);
 
                 // Check lock
                 DateTime lockTimeoutTime = DateTime.Now.Add(timeout);
@@ -104,7 +104,7 @@ namespace Hangfire.Raven.DistributedLock
                 do {
                     using (var repository = new Repository()) {
                         isLockedBySomeoneElse = repository.Session.Query<DistributedLocks>()
-                            .FirstOrDefault(t => t.Resource == resource && t.ClientId == _options.ClientId) != null;
+                            .FirstOrDefault(t => t.Resource == resource && t.ClientId != _options.ClientId) != null;
                     }
 
                     if (isFirstAttempt == true) {
@@ -136,23 +136,23 @@ namespace Hangfire.Raven.DistributedLock
                         }
                     }
 
-                    StartHeartBeat();
+                    StartHeartBeat(_resource);
                 } else {
-                    throw new RavenDistributedLockException(string.Format("Could not place a lock on the resource '{0}': {1}.", _resource, "The lock request timed out"));
+                    throw new RavenDistributedLockException(string.Format("Could not place a lock on the resource '{0}': {1}.", resource, "The lock request timed out"));
                 }
             } catch (Exception ex) {
                 if (ex is RavenDistributedLockException) {
                     throw;
                 } else {
-                    throw new RavenDistributedLockException(string.Format("Could not place a lock on the resource '{0}': {1}.", _resource, "Check inner exception for details"), ex);
+                    throw new RavenDistributedLockException(string.Format("Could not place a lock on the resource '{0}': {1}.", resource, "Check inner exception for details"), ex);
                 }
             }
         }
 
-        internal static void Release(string resource)
+        internal void Release(string resource)
         {
             try {
-                RemoveDeadLocks();
+                RemoveDeadLocks(resource);
 
                 // Remove resource lock
                 using (var repository = new Repository()) {
@@ -172,15 +172,16 @@ namespace Hangfire.Raven.DistributedLock
             }
         }
 
-        private static void StartHeartBeat()
+        private void StartHeartBeat(string resource)
         {
+            Console.WriteLine("Starting heartbeat for resource: " + resource);
             TimeSpan timerInterval = TimeSpan.FromMilliseconds(_options.DistributedLockLifetime.TotalMilliseconds / 5);
 
             _heartbeatTimer = new Timer(state =>
             {
                 try {
                     using (var repository = new Repository()) {
-                        var distributedLocks = repository.Session.Query<DistributedLocks>().Where(t => t.Resource == _resource && t.ClientId == _options.ClientId).ToList();
+                        var distributedLocks = repository.Session.Query<DistributedLocks>().Where(t => t.Resource == resource && t.ClientId == _options.ClientId).ToList();
 
                         foreach (var distributedLock in distributedLocks) {
                             distributedLock.Heartbeat = DateTime.UtcNow;
@@ -188,16 +189,16 @@ namespace Hangfire.Raven.DistributedLock
                         }
                     }
                 } catch (Exception ex) {
-                    Console.WriteLine("Unable to update heartbeat on the resource '{0}'", ex, _resource);
+                    Console.WriteLine("Unable to update heartbeat on the resource '{0}'", ex, resource);
                 }
             }, null, timerInterval, timerInterval);
         }
 
-        private static void RemoveDeadLocks()
+        private void RemoveDeadLocks(string resource)
         {
             using (var repository = new Repository()) {
                 var heartBeat = DateTime.UtcNow.Subtract(_options.DistributedLockLifetime);
-                var deadLocks = repository.Session.Query<DistributedLocks>().Where(t => t.Resource == _resource && t.Heartbeat == heartBeat).ToList();
+                var deadLocks = repository.Session.Query<DistributedLocks>().Where(t => t.Resource == resource && t.Heartbeat < heartBeat).ToList();
 
                 foreach (var deadlock in deadLocks) {
                     repository.Delete(deadlock);
