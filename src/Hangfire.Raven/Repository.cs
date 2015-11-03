@@ -19,6 +19,7 @@ namespace HangFire.Raven
 {
     public class Repository : IDisposable
     {
+        public static string ConnectionString { get; set; }
         public static string ConnectionUrl { get; set; }
         public static string DefaultDatabase { get; set; }
 
@@ -62,10 +63,20 @@ namespace HangFire.Raven
 
                         ((EmbeddableDocumentStore)_documentStore).Configuration.Storage.Voron.AllowOn32Bits = true;
                     } else {
-                        _documentStore = new DocumentStore
+                        if (!string.IsNullOrEmpty(ConnectionString))
                         {
-                            Url = ConnectionUrl
-                        };
+                            _documentStore = new DocumentStore
+                            {
+                                ConnectionStringName = ConnectionString
+                            };
+                        }
+                        else
+                        {
+                            _documentStore = new DocumentStore
+                            {
+                                Url = ConnectionUrl
+                            };
+                        }
                     }
 
                     _documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;

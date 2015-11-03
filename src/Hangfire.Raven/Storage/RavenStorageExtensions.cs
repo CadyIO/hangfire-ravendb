@@ -24,6 +24,18 @@ namespace HangFire.Raven.Storage
 {
     public static class SqlServerStorageExtensions
     {
+        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionString)
+        {
+            configuration.ThrowIfNull("configuration");
+            connectionString.ThrowIfNull("connectionString");
+
+            Repository.ConnectionString = connectionString;
+
+            var storage = new RavenStorage();
+
+            return configuration.UseStorage(storage);
+        }
+
         public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database)
         {
             configuration.ThrowIfNull("configuration");
