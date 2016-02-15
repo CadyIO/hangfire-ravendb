@@ -114,7 +114,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JobQueues\RavenJobQueueProvider.cs" />
     <Compile Include="Repository.cs" />
-    <Compile Include="SqlServerMonitoringApi.cs" />
     <Compile Include="JobQueues\RavenJobQueueMonitoringApi.cs" />
     <Compile Include="Storage\RavenStorage.cs" />
     <Compile Include="Storage\RavenStorageExtensions.cs" />

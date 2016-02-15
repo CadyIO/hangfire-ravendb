@@ -22,15 +22,19 @@ namespace HangFire.Raven
         public static string ConnectionString { get; set; }
         public static string ConnectionUrl { get; set; }
         public static string DefaultDatabase { get; set; }
+        public static string APIKey { get; set; }
 
         private static IDocumentStore _documentStore;
         private IDocumentSession _session;
         private IAsyncDocumentSession _asyncSession;
         private string _database;
+        private string _APIKey;
 
         public static bool Embedded { get; set; }
 
         public string Database => _database ?? DefaultDatabase;
+
+        public string APIKeyAccess => _APIKey ?? string.Empty;
 
         public void Destroy()
         {
@@ -67,14 +71,17 @@ namespace HangFire.Raven
                         {
                             _documentStore = new DocumentStore
                             {
-                                ConnectionStringName = ConnectionString
+                                ConnectionStringName = ConnectionString,
+                                ApiKey = APIKey
+
                             };
                         }
                         else
                         {
                             _documentStore = new DocumentStore
                             {
-                                Url = ConnectionUrl
+                                Url = ConnectionUrl,
+                                ApiKey = APIKey
                             };
                         }
                     }
@@ -99,15 +106,27 @@ namespace HangFire.Raven
         public Repository()
         {
             _database = DefaultDatabase;
+            _APIKey = APIKey;
         }
 
-        public Repository(string database)
+        public Repository(string database, string APIKey)
         {
             if (database.IsEmpty()) {
                 _database = DefaultDatabase;
             } else {
-                _database = database;
+                _database = database;                
             }
+
+            if (APIKey.IsEmpty())
+            {
+                _APIKey = APIKeyAccess;
+            }
+            else
+            {
+                _APIKey = APIKey;
+            }
+
+
         }
 
         #endregion
