@@ -28,13 +28,13 @@ namespace HangFire.Raven
         private IDocumentSession _session;
         private IAsyncDocumentSession _asyncSession;
         private string _database;
-        private string _APIKey;
+        private string _apiKey;
 
         public static bool Embedded { get; set; }
 
         public string Database => _database ?? DefaultDatabase;
 
-        public string APIKeyAccess => _APIKey ?? string.Empty;
+        public string ApiKeyAccess => _apiKey ?? string.Empty;
 
         public void Destroy()
         {
@@ -106,7 +106,7 @@ namespace HangFire.Raven
         public Repository()
         {
             _database = DefaultDatabase;
-            _APIKey = APIKey;
+            _apiKey = APIKey;
         }
 
         public Repository(string database, string APIKey)
@@ -119,11 +119,11 @@ namespace HangFire.Raven
 
             if (APIKey.IsEmpty())
             {
-                _APIKey = APIKeyAccess;
+                _apiKey = ApiKeyAccess;
             }
             else
             {
-                _APIKey = APIKey;
+                _apiKey = APIKey;
             }
 
 

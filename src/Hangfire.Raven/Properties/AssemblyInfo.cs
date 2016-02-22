@@ -12,6 +12,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Axial Commerce")]
 [assembly: AssemblyProduct("Hangfire Raven")]
 [assembly: AssemblyCopyright("Copyright © Axial Commerce")]
-[assembly: AssemblyVersion("1.7")]
-[assembly: AssemblyFileVersion("1.7")]
+[assembly: AssemblyVersion("1.8")]
+[assembly: AssemblyFileVersion("1.8")]
 

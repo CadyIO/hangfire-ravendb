@@ -60,8 +60,7 @@ namespace HangFire.Raven.Storage
             connectionUrl.ThrowIfNull("connectionUrl");
             database.ThrowIfNull("database");
 
-            if (!connectionUrl.StartsWith("http"))
-            {
+            if (!connectionUrl.StartsWith("http")) {
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
