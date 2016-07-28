@@ -24,14 +24,23 @@ namespace HangFire.Raven.Storage
 {
     public static class SqlServerStorageExtensions
     {
+        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, RavenStorage storage)
+        {
+            storage.ThrowIfNull("storage");
+
+            return configuration.UseStorage(storage);
+        }
+
         public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionString)
         {
             configuration.ThrowIfNull("configuration");
             connectionString.ThrowIfNull("connectionString");
 
-            Repository.ConnectionString = connectionString;
-
-            var storage = new RavenStorage();
+            var config = new RepositoryConfig()
+            {
+                ConnectionString = connectionString
+            };
+            var storage = new RavenStorage(config);
 
             return configuration.UseStorage(storage);
         }
@@ -46,10 +55,12 @@ namespace HangFire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            Repository.ConnectionUrl = connectionUrl;
-            Repository.DefaultDatabase = database;
-
-            var storage = new RavenStorage();
+            var config = new RepositoryConfig()
+            {
+                ConnectionUrl = connectionUrl,
+                Database = database
+            };
+            var storage = new RavenStorage(config);
 
             return configuration.UseStorage(storage);
         }
@@ -64,11 +75,14 @@ namespace HangFire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            Repository.ConnectionUrl = connectionUrl;
-            Repository.DefaultDatabase = database;
-            Repository.APIKey = APIKey;
+            var config = new RepositoryConfig()
+            {
+                ConnectionUrl = connectionUrl,
+                Database = database,
+                APIKey = APIKey
+            };
 
-            var storage = new RavenStorage();
+            var storage = new RavenStorage(config);
 
             return configuration.UseStorage(storage);
         }
@@ -84,33 +98,13 @@ namespace HangFire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            Repository.ConnectionUrl = connectionUrl;
-            Repository.DefaultDatabase = database;
+            var config = new RepositoryConfig()
+            {
+                ConnectionUrl = connectionUrl,
+                Database = database
+            };
 
-            var storage = new RavenStorage(options);
-
-            return configuration.UseStorage(storage);
-        }
-
-        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration)
-        {
-            configuration.ThrowIfNull("configuration");
-
-            Repository.Embedded = true;
-
-            var storage = new RavenStorage();
-
-            return configuration.UseStorage(storage);
-        }
-
-        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration, RavenStorageOptions options)
-        {
-            configuration.ThrowIfNull("configuration");
-            options.ThrowIfNull("options");
-
-            Repository.Embedded = true;
-
-            var storage = new RavenStorage(options);
+            var storage = new RavenStorage(config);
 
             return configuration.UseStorage(storage);
         }

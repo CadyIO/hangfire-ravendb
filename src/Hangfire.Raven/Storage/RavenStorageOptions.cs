@@ -26,7 +26,6 @@ namespace Hangfire.Raven.Storage
 
         public RavenStorageOptions()
         {
-            QueuePollInterval = TimeSpan.FromSeconds(15);
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
@@ -38,29 +37,6 @@ namespace Hangfire.Raven.Storage
             _clientId = Guid.NewGuid().ToString().Replace("-", String.Empty);
         }
 
-        public TimeSpan QueuePollInterval
-        {
-            get { return _queuePollInterval; }
-            set
-            {
-                var message = string.Format(
-                    "The QueuePollInterval property value should be positive. Given: {0}.",
-                    value);
-
-                if (value == TimeSpan.Zero)
-                {
-                    throw new ArgumentException(message, "value");
-                }
-                if (value != value.Duration())
-                {
-                    throw new ArgumentException(message, "value");
-                }
-
-                _queuePollInterval = value;
-            }
-        }
-
-        [Obsolete("Does not make sense anymore. Background jobs re-queued instantly even after ungraceful shutdown now. Will be removed in 2.0.0.")]
         public TimeSpan InvisibilityTimeout { get; set; }
 
         public bool PrepareSchemaIfNecessary { get; set; }

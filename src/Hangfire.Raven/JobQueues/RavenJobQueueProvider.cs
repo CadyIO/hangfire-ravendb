@@ -17,6 +17,7 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Raven.Storage;
+using HangFire.Raven;
 
 namespace Hangfire.Raven.JobQueues
 {
@@ -31,7 +32,7 @@ namespace Hangfire.Raven.JobQueues
             options.ThrowIfNull("options");
 
             _jobQueue = new RavenJobQueue(storage, options);
-            //_monitoringApi = new RavenJobQueueMonitoringApi(storage);
+            _monitoringApi = new RavenJobQueueMonitoringApi(storage);
         }
 
         public IPersistentJobQueue GetJobQueue()

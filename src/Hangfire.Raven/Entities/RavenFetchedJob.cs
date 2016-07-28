@@ -24,6 +24,7 @@ namespace Hangfire.Raven.Entities
     public class RavenFetchedJob : IFetchedJob
     {
         private readonly RavenStorage _storage;
+
         private bool _requeued { get; set; }
         private bool _removedFromQueue { get; set; }
         private bool _disposed { get; set; }
@@ -48,12 +49,15 @@ namespace Hangfire.Raven.Entities
 
         public void RemoveFromQueue()
         {
-            using (var repository = new Repository()) {
-                var job = repository.Session.Load<JobQueue>(Id);
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                var job = repository.Load<JobQueue>(Id);
 
-                if (job != null) {
+                if (job != null)
+                {
                     repository.Delete(job);
                 }
+                repository.SaveChanges();
             }
 
             _removedFromQueue = true;
@@ -61,12 +65,14 @@ namespace Hangfire.Raven.Entities
 
         public void Requeue()
         {
-            using (var repository = new Repository()) {
-                var job = repository.Session.Load<JobQueue>(Id);
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                var job = repository.Load<JobQueue>(Id);
 
                 job.FetchedAt = null;
 
-                repository.Save(job);
+                repository.Store(job);
+                repository.SaveChanges();
             }
 
             _requeued = true;

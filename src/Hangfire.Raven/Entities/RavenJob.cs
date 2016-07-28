@@ -14,21 +14,30 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Common;
 using Hangfire.Raven.Entities.Identity;
+using Hangfire.Storage;
 using System;
+using System.Collections.Generic;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Raven.Entities
 {
-    internal class RavenJob : BaseEntity
+    public class RavenJob
     {
-        public string InvocationData { get; set; }
-        public string Arguments { get; set; }
+        public RavenJob()
+        {
+            this.Parameters = new Dictionary<string, string>();
+            this.History = new List<StateHistoryDto>();
+        }
+
+        public string Id { get; set; }
+        public InvocationData InvocationData { get; set; }
+        public IDictionary<string, string> Parameters { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ExpireAt { get; set; }
 
-        public string StateId { get; set; }
-        public string StateName { get; set; }
-        public string StateReason { get; set; }
-        public string StateData { get; set; }
+        public StateData StateData { get; set; }
+        public List<StateHistoryDto> History { get; set; }
     }
 }

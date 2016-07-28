@@ -21,49 +21,54 @@ using Hangfire.Server;
 using System.Linq;
 using HangFire.Raven;
 using Hangfire.Raven.Entities;
+using Hangfire.Annotations;
+using Hangfire.Raven.Storage;
 
 namespace Hangfire.Raven
 {
-    public class ExpirationManager : IServerComponent
+    public class ExpirationManager : IBackgroundProcess, IServerComponent
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly TimeSpan _checkInterval;
+        private RavenStorage _storage;
 
-        public ExpirationManager()
-            : this(TimeSpan.FromHours(1))
-        {
-        }
-
-        public ExpirationManager(TimeSpan checkInterval)
+        public ExpirationManager(RavenStorage storage, TimeSpan checkInterval)
         {
             _checkInterval = checkInterval;
+            _storage = storage;
         }
 
         public void Execute(CancellationToken cancellationToken)
-        { 
-            using (var repository = new Repository()) {
-                var session = repository.Session;
-
+        {
+            using (var repository = _storage.Repository.OpenSession())
+            {
                 var now = DateTime.UtcNow;
 
-                var counters = session.Query<Counter>().Where(t => t.ExpireAt <= now).ToList();
-                counters.ForEach(t => session.Delete(t));
+                var counters = repository.Query<Counter>().Where(t => t.ExpireAt <= now).ToList();
+                counters.ForEach(t => repository.Delete(t));
 
-                var jobs = session.Query<RavenJob>().Where(t => t.ExpireAt <= now).ToList();
-                jobs.ForEach(t => session.Delete(t));
+                var jobs = repository.Query<RavenJob>().Where(t => t.ExpireAt <= now).ToList();
+                jobs.ForEach(t => repository.Delete(t));
 
-                var hashes = session.Query<RavenHash>().Where(t => t.ExpireAt <= now).ToList();
-                hashes.ForEach(t => session.Delete(t));
+                var hashes = repository.Query<RavenHash>().Where(t => t.ExpireAt <= now).ToList();
+                hashes.ForEach(t => repository.Delete(t));
 
-                var lists = session.Query<RavenList>().Where(t => t.ExpireAt <= now).ToList();
-                lists.ForEach(t => session.Delete(t));
+                var lists = repository.Query<RavenList>().Where(t => t.ExpireAt <= now).ToList();
+                lists.ForEach(t => repository.Delete(t));
 
-                var sets = session.Query<RavenSet>().Where(t => t.ExpireAt <= now).ToList();
-                sets.ForEach(t => session.Delete(t));
+                var sets = repository.Query<RavenSet>().Where(t => t.ExpireAt <= now).ToList();
+                sets.ForEach(t => repository.Delete(t));
+
+                repository.SaveChanges();
             }
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);
+        }
+
+        public void Execute([NotNull] BackgroundProcessContext context)
+        {
+            this.Execute(context.CancellationToken);
         }
 
         public override string ToString()

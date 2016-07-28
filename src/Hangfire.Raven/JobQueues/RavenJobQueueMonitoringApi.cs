@@ -19,15 +19,28 @@ using System.Linq;
 using Hangfire.Raven.Entities;
 using HangFire.Raven;
 using Hangfire.Raven.JobQueues;
+using Hangfire.Raven.Storage;
+using Hangfire.Annotations;
 
 namespace Hangfire.Raven.JobQueues
 {
-    internal class RavenJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
+    internal class RavenJobQueueMonitoringApi 
+        : IPersistentJobQueueMonitoringApi
     {
+        private RavenStorage _storage;
+
+        public RavenJobQueueMonitoringApi([NotNull] RavenStorage storage)
+        {
+            storage.ThrowIfNull("storage");
+
+            _storage = storage;
+        }
+
         public IEnumerable<string> GetQueues()
         {
-            using (var repository = new Repository()) {
-                return repository.Session.Query<JobQueue>()
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                return repository.Query<JobQueue>()
                     .Select(x => x.Queue)
                     .Distinct()
                     .ToList();
@@ -39,8 +52,9 @@ namespace Hangfire.Raven.JobQueues
             int start = @from + 1;
             int end = from + perPage;
 
-            using (var repository = new Repository()) {
-                var jobs = repository.Session.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null)
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                var jobs = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null)
                 .Select((data, i) => new { Index = i + 1, Data = data })
                 .Where(_ => (_.Index >= start) && (_.Index <= end))
                 .Select(x => x.Data)
@@ -49,15 +63,15 @@ namespace Hangfire.Raven.JobQueues
                 var results = new List<RavenJob>();
 
                 foreach (var item in jobs) {
-                    var job = repository.Session.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
+                    var job = repository.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
 
-                    if (job != null && repository.Session.Query<State>().FirstOrDefault(t => t.Id == job.StateId) != null) {
+                    if(job.StateData != null)
                         results.Add(job);
-                    }
                 }
 
                 return results.Select(t => t.Id).ToList();
             }
+
         }
 
         public IEnumerable<string> GetFetchedJobIds(string queue, int @from, int perPage)
@@ -65,16 +79,18 @@ namespace Hangfire.Raven.JobQueues
             int start = @from + 1;
             int end = from + perPage;
 
-            using (var repository = new Repository()) {
-                var jobs = repository.Session.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt != null)
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                var jobs = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt != null)
                                 .Select((data, i) => new { Index = i + 1, Data = data })
                                 .Where(_ => (_.Index >= start) && (_.Index <= end))
                                 .Select(x => x.Data);
 
                 var results = new List<string>();
 
-                foreach (var item in jobs) {
-                    var job = repository.Session.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
+                foreach (var item in jobs)
+                {
+                    var job = repository.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
 
                     if (job != null) {
                         results.Add(job.Id);
@@ -87,10 +103,11 @@ namespace Hangfire.Raven.JobQueues
 
         public EnqueuedAndFetchedCount GetEnqueuedAndFetchedCount(string queue)
         {
-            using (var repository = new Repository()) {
-                int enqueuedCount = repository.Session.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null).Count();
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                int enqueuedCount = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null).Count();
 
-                int fetchedCount = repository.Session.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt != null).Count();
+                int fetchedCount = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt != null).Count();
 
                 return new EnqueuedAndFetchedCount
                 {

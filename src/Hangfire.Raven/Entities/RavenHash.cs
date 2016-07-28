@@ -16,16 +16,19 @@
 
 using Hangfire.Raven.Entities.Identity;
 using System;
+using System.Collections.Generic;
 
 namespace Hangfire.Raven.Entities
 {
-    public class RavenHash : BaseEntity
+    public class RavenHash 
     {
-        public string Key { get; set; }
-        public string Field { get; set; }
-        public string Value { get; set; }
-        public DateTime? ExpireAt { get; set; }
+        public RavenHash()
+        {
+            this.Fields = new Dictionary<string, string>();
+        }
 
-        public string JobId { get; set; }
+        public string Id { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
+        public DateTime? ExpireAt { get; set; }
     }
 }
