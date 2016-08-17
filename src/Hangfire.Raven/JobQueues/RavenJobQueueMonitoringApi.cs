@@ -1,20 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// Hangfire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Raven.Entities;
 using HangFire.Raven;
@@ -63,13 +47,13 @@ namespace Hangfire.Raven.JobQueues
                 var results = new List<RavenJob>();
 
                 foreach (var item in jobs) {
-                    var job = repository.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
+                    var job = repository.Load<RavenJob>(item.JobId);
 
                     if(job.StateData != null)
                         results.Add(job);
                 }
 
-                return results.Select(t => t.Id).ToList();
+                return results.Select(t => t.Id.Split(new char[] { '/' }, 2)[1]).ToList();
             }
 
         }
@@ -90,10 +74,10 @@ namespace Hangfire.Raven.JobQueues
 
                 foreach (var item in jobs)
                 {
-                    var job = repository.Query<RavenJob>().FirstOrDefault(t => t.Id == item.JobId);
+                    var job = repository.Load<RavenJob>(item.JobId);
 
                     if (job != null) {
-                        results.Add(job.Id);
+                        results.Add(job.Id.Split(new char[] { '/' }, 2)[1]);
                     }
                 }
 

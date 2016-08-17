@@ -22,10 +22,10 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Raven.Client;
-using Hangfire.Raven.DistributedLock;
 using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
+using Hangfire.Raven.DistributedLocks;
 
 namespace Hangfire.Raven
 {
@@ -47,7 +47,7 @@ namespace Hangfire.Raven
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            return new RavenDistributedLock(_storage, string.Format("HangFire:{0}", resource), timeout);
+            return new RavenDistributedLock(_storage, string.Format("HangFire/{0}", resource), timeout);
         }
 
 

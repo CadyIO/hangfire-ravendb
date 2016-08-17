@@ -92,6 +92,11 @@ namespace HangFire.Raven
             return _documentStore.DatabaseCommands.GetFacets(index, query, facets);
         }
 
+        public void ExecuteIndexes(List<AbstractIndexCreationTask> indexes)
+        {
+            _documentStore.ExecuteIndexes(indexes);
+        }
+
         public static string GetId(Type type, params string[] id)
         {
             return Repository._documentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(string.Join("/", id), type, false);
@@ -119,6 +124,13 @@ namespace HangFire.Raven
         public IDisposable DocumentChange(Type documentType, Action<DocumentChangeNotification> action)
         {
             return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(GetId(documentType, ""))
+                .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
+        }
+        public IDisposable DocumentChange(Type documentType, string suffix, Action<DocumentChangeNotification> action)
+        {
+            return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(
+                    GetId(documentType, string.Format("{0}/", suffix))
+                )
                 .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
         }
 

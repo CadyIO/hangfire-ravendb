@@ -85,7 +85,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConcurrentHashSet.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLock.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLockException.cs" />
     <Compile Include="Entities\AggregatedCounter.cs" />

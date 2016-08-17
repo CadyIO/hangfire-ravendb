@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Raven.Entities
 {
-    public class Counter : BaseEntity
+    public class Counter
     {
-        public string Key { get; set; }
+        public string Id { get; set; }
 
         public int Value { get; set; }
 

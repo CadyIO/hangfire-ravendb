@@ -3,11 +3,20 @@ using System;
 
 namespace Hangfire.Raven.Entities
 {
-    public class DistributedLocks : BaseEntity
+    public class DistributedLock
     {
+        public string Id
+        {
+            get
+            {
+                return string.Format("DistributedLocks/{0}", Resource);
+            }
+            set
+            {
+
+            }
+        }
         public string Resource { get; set; }
         public string ClientId { get; set; }
-        public int LockCount { get; set; }
-        public DateTime Heartbeat { get; set; }
     }
 }

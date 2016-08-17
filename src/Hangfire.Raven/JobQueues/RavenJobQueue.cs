@@ -1,19 +1,3 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// Hangfire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
-
 using System;
 using System.Threading;
 using Hangfire.Annotations;
@@ -34,9 +18,7 @@ namespace Hangfire.Raven.JobQueues
     {
         private readonly RavenStorage _storage;
         private readonly RavenStorageOptions _options;
-        private BlockingQueue<string> _queue;
-
-        private static object _lockMethod = new object();
+        private BlockingCollection<string> _queue;
 
         public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options)
         {
@@ -45,15 +27,37 @@ namespace Hangfire.Raven.JobQueues
 
             _storage = storage;
             _options = options;
-            _queue = new BlockingQueue<string>();
+            _queue = new BlockingCollection<string>();
 
-            _storage.Repository.DocumentChange(typeof(JobQueue), QueueFiller);
+            using (var session = _storage.Repository.OpenSession())
+            {
+                var missed = session.Advanced.LoadStartingWith<JobQueue>(Repository.GetId(typeof(JobQueue), ""));
+                foreach(var miss in missed)
+                {
+                    _queue.Add(miss.Id);
+                }
+            }
+
+            // -- Queue listening
+            if (options.QueueNames == null)
+            {
+                Console.WriteLine("Starting on ALL Queue's, this is not recommended, please specify using RavenStorageOptions. Use an empty IEnumerable (such as List<string> or string[0]) to not listen to any queue.");
+                _storage.Repository.DocumentChange(typeof(JobQueue), QueueFiller);
+            }
+            else
+            {
+                foreach (var queue in options.QueueNames)
+                {
+                    Console.WriteLine("Starting on queue: {0}", queue);
+                    _storage.Repository.DocumentChange(typeof(JobQueue), queue, QueueFiller);
+                }
+            }
         }
 
         private void QueueFiller(DocumentChangeNotification notification)
         {
             if(notification.Type == DocumentChangeTypes.Put)
-                _queue.Enqueue(notification.Id);
+                _queue.Add(notification.Id);
         }
 
         [NotNull]
@@ -65,37 +69,41 @@ namespace Hangfire.Raven.JobQueues
                 throw new ArgumentException("Queue array must be non-empty.", "queues");
             }
 
-            lock (_lockMethod)
+            JobQueue fetchedJob = null;
+            do
             {
-                JobQueue fetchedJob = null;
-                do
-                {
-                    var jobId = _queue.Dequeue(cancellationToken);
+                var jobId = _queue.Take(cancellationToken);
 
-                    using (var repository = _storage.Repository.OpenSession())
+                using (var repository = _storage.Repository.OpenSession())
+                {
+                    fetchedJob = repository.Load<JobQueue>(jobId);
+                    if (fetchedJob != null && 
+                        fetchedJob.FetchedAt == null &&
+                        queues.Contains(fetchedJob.Queue))
                     {
-                        fetchedJob = repository.Load<JobQueue>(jobId);
-                        if (fetchedJob != null &&
-                            (
-                                fetchedJob.FetchedAt == null ||
-                                fetchedJob.FetchedAt < DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds)
-                            ) &&
-                            queues.Contains(fetchedJob.Queue))
+                        fetchedJob.FetchedAt = DateTime.UtcNow;
+                        repository.Store(fetchedJob);
+
+                        try
                         {
-                            fetchedJob.FetchedAt = DateTime.UtcNow;
-                            repository.Store(fetchedJob);
+                            // Did someone else already picked it up?
+                            repository.Advanced.UseOptimisticConcurrency = true;
                             repository.SaveChanges();
                         }
-                        else
+                        catch
                         {
                             fetchedJob = null;
                         }
                     }
+                    else
+                    {
+                        fetchedJob = null;
+                    }
                 }
-                while (fetchedJob == null);
-
-                return new RavenFetchedJob(_storage, fetchedJob);
             }
+            while (fetchedJob == null);
+
+            return new RavenFetchedJob(_storage, fetchedJob);
         }
 
         public void Enqueue(string queue, string jobId)
@@ -104,6 +112,7 @@ namespace Hangfire.Raven.JobQueues
             {
                 var jobQueue = new JobQueue
                 {
+                    Id = Repository.GetId(typeof(JobQueue), queue, jobId),
                     JobId = jobId,
                     Queue = queue
                 };

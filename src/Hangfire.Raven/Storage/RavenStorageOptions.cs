@@ -1,20 +1,5 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// Hangfire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Hangfire.Raven.Storage
 {
@@ -22,35 +7,30 @@ namespace Hangfire.Raven.Storage
     {
         private readonly string _clientId = null;
 
-        private TimeSpan _queuePollInterval;
-
         public RavenStorageOptions()
         {
-            InvisibilityTimeout = TimeSpan.FromMinutes(30);
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
-            PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 50000;
             TransactionTimeout = TimeSpan.FromMinutes(1);
-            DistributedLockLifetime = TimeSpan.FromSeconds(30);
 
             _clientId = Guid.NewGuid().ToString().Replace("-", String.Empty);
         }
 
         public TimeSpan InvisibilityTimeout { get; set; }
 
-        public bool PrepareSchemaIfNecessary { get; set; }
-
         public TimeSpan JobExpirationCheckInterval { get; set; }
         public TimeSpan CountersAggregateInterval { get; set; }
 
         public int? DashboardJobListLimit { get; set; }
         public TimeSpan TransactionTimeout { get; set; }
-        public TimeSpan DistributedLockLifetime { get; set; }
+
+        public IEnumerable<string> QueueNames { get; set; }
 
         public string ClientId
         {
             get { return _clientId; }
         }
+
     }
 }

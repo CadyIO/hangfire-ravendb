@@ -26,7 +26,8 @@ using Hangfire.Raven.Storage;
 
 namespace Hangfire.Raven
 {
-    public class ExpirationManager : IBackgroundProcess, IServerComponent
+    public class ExpirationManager 
+        : IBackgroundProcess, IServerComponent
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 

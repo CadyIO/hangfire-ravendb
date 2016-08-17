@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hangfire.Raven.DistributedLock
+namespace Hangfire.Raven.DistributedLocks
 {
     /// <summary>
     /// Represents exceptions for distributed lock implementation for MongoDB
