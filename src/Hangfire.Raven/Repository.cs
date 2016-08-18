@@ -1,11 +1,9 @@
 ﻿using Raven.Client;
 using System;
-using Dewey.Net.Types;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Dewey.Net.Generic;
 using Raven.Abstractions.Data;
 using System.Collections.Concurrent;
 using Raven.Client.Linq;
@@ -14,6 +12,7 @@ using System.Linq.Expressions;
 using Hangfire.Raven.Entities.Identity;
 using Hangfire.Raven.Extensions;
 using Hangfire.Raven.Listeners;
+using Dewey.Types;
 
 namespace HangFire.Raven
 {
