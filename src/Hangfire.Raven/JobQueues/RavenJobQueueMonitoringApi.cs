@@ -38,11 +38,12 @@ namespace Hangfire.Raven.JobQueues
 
             using (var repository = _storage.Repository.OpenSession())
             {
-                var jobs = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null)
-                .Select((data, i) => new { Index = i + 1, Data = data })
-                .Where(_ => (_.Index >= start) && (_.Index <= end))
-                .Select(x => x.Data)
-                .ToList();
+                var jobs = repository.Query<JobQueue>()
+                    .Where(t => t.Queue == queue && t.FetchedAt == null)
+                    .Select((data, i) => new { Index = i + 1, Data = data })
+                    .Where(_ => (_.Index >= start) && (_.Index <= end))
+                    .Select(x => x.Data)
+                    .ToList();
 
                 var results = new List<RavenJob>();
 
@@ -90,7 +91,6 @@ namespace Hangfire.Raven.JobQueues
             using (var repository = _storage.Repository.OpenSession())
             {
                 int enqueuedCount = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt == null).Count();
-
                 int fetchedCount = repository.Query<JobQueue>().Where(t => t.Queue == queue && t.FetchedAt != null).Count();
 
                 return new EnqueuedAndFetchedCount

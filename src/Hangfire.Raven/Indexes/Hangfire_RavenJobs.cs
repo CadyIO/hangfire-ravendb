@@ -24,8 +24,7 @@ namespace Hangfire.Raven.Indexes
                                select new Mapping
                                {
                                    StateName = result.StateData.Name,
-                                   CreatedAt = result.CreatedAt,
-                                   ExpireAt = result.ExpireAt
+                                   CreatedAt = result.CreatedAt
                                };
             this.Analyze("StateName", "WhitespaceAnalyzer");
         }

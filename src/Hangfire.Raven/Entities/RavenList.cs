@@ -1,14 +1,13 @@
-﻿using Hangfire.Raven.Entities.Identity;
-using System;
+﻿using System;
 
 namespace Hangfire.Raven.Entities
 {
-    public class RavenList : BaseEntity
+    public class RavenList
     {
+        public string Id { get; set; }
+
         public string Key { get; set; }
 
         public string Value { get; set; }
-
-        public DateTime ExpireAt { get; set; }
     }
 }

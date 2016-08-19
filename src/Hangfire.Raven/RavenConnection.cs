@@ -26,6 +26,7 @@ using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Raven.DistributedLocks;
+using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven
 {
@@ -93,11 +94,12 @@ namespace Hangfire.Raven
                     Id = Repository.GetId(typeof(RavenJob), guid),
                     InvocationData = invocationData,
                     CreatedAt = createdAt,
-                    ExpireAt = createdAt.Add(expireIn),
                     Parameters = parameters
                 };
 
                 repository.Store(ravenJob);
+                repository.Advanced.AddExpire(ravenJob, createdAt + expireIn);
+
                 repository.SaveChanges();
 
                 return guid;
@@ -133,7 +135,7 @@ namespace Hangfire.Raven
                 return new JobData
                 {
                     Job = job,
-                    State = jobData.StateData.Name,
+                    State = jobData.StateData?.Name,
                     CreatedAt = jobData.CreatedAt,
                     LoadException = loadException
                 };
@@ -406,10 +408,12 @@ namespace Hangfire.Raven
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
-                if(set.ExpireAt == null)
+                var expireAt = repository.Advanced.GetExpire(set);
+
+                if(expireAt == null)
                     return TimeSpan.FromSeconds(-1);
 
-                return set.ExpireAt.Value - DateTime.UtcNow;
+                return expireAt.Value - DateTime.UtcNow;
             }
         }
 
@@ -447,12 +451,13 @@ namespace Hangfire.Raven
             using (var repository = _storage.Repository.OpenSession())
             {
                 var ravenHash = repository.Load<RavenHash>(Repository.GetId(typeof(RavenHash), key));
-                
-                if (!ravenHash.ExpireAt.HasValue) {
+
+                var expireAt = repository.Advanced.GetExpire(ravenHash);
+                if (!expireAt.HasValue) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                return ravenHash.ExpireAt.Value - DateTime.UtcNow;
+                return expireAt.Value - DateTime.UtcNow;
             }
         }
 
@@ -493,17 +498,9 @@ namespace Hangfire.Raven
 
             using (var repository = _storage.Repository.OpenSession())
             {
-                var results = repository.Query<RavenList>()
-                                .Where(t => t.Key == key)
-                                .ToList();
+                // TODO: Implement!
 
-                DateTime? ttl = results.Any() ? results.Min(t => t.ExpireAt) : (DateTime?)null;
-
-                if (!ttl.HasValue) {
-                    return TimeSpan.FromSeconds(-1);
-                }
-
-                return ttl.Value - DateTime.UtcNow;
+                return TimeSpan.FromSeconds(-1);
             }
         }
 

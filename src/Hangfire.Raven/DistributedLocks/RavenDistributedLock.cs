@@ -8,6 +8,7 @@ using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using System;
 using Raven.Json.Linq;
+using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven.DistributedLocks
 {
@@ -57,8 +58,7 @@ namespace Hangfire.Raven.DistributedLocks
                 };
 
                 session.Store(_distributedLock);
-                session.Advanced.GetMetadataFor(_distributedLock)["Raven-Expiration-Date"] = 
-                    new RavenJValue(DateTime.UtcNow + _timeout);
+                session.Advanced.AddExpire(_distributedLock, DateTime.UtcNow + _timeout);
 
                 try
                 {
@@ -97,13 +97,13 @@ namespace Hangfire.Raven.DistributedLocks
                     }
 
                     _distributedLock = null;
+                }
 
-                    // Stop timer
-                    if (_heartbeatTimer != null)
-                    {
-                        _heartbeatTimer.Dispose();
-                        _heartbeatTimer = null;
-                    }
+                // Stop timer
+                if (_heartbeatTimer != null)
+                {
+                    _heartbeatTimer.Dispose();
+                    _heartbeatTimer = null;
                 }
             }
         }
@@ -121,10 +121,8 @@ namespace Hangfire.Raven.DistributedLocks
                     using (var session = _storage.Repository.OpenSession())
                     {
                         var distributedLock = session.Load<DistributedLock>(_distributedLock.Id);
-
-                        session.Advanced.GetMetadataFor(distributedLock)["Raven-Expiration-Date"] =
-                            new RavenJValue(DateTime.UtcNow + _timeout);
-
+                        
+                        session.Advanced.AddExpire(distributedLock, DateTime.UtcNow + _timeout);
                         session.SaveChanges();
                     }
                 }

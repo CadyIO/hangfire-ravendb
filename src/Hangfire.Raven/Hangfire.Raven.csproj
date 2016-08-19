@@ -93,10 +93,8 @@
     <Compile Include="Entities\EnqueuedAndFetchedCount.cs" />
     <Compile Include="Entities\JobQueue.cs" />
     <Compile Include="Entities\RavenHash.cs" />
-    <Compile Include="Entities\Identity\BaseEntity.cs" />
     <Compile Include="Entities\RavenList.cs" />
     <Compile Include="Entities\RavenSet.cs" />
-    <Compile Include="ExpirationManager.cs" />
     <Compile Include="Entities\RavenJob.cs" />
     <Compile Include="Entities\RavenServer.cs" />
     <Compile Include="Extensions\DatabaseExtensions.cs" />

@@ -14,6 +14,7 @@ using Raven.Client.Indexes;
 using Raven.Abstractions.Indexing;
 using Raven.Abstractions.Data;
 using Hangfire.Raven.Indexes;
+using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven.Storage
 {
@@ -137,21 +138,22 @@ namespace Hangfire.Raven.Storage
         private Dictionary<DateTime, long> GetTimelineStats(List<DateTime> dates,
             Func<DateTime, string> formatorAction)
         {
-            /*
-            var counters = Data.GetEnumeration<AggregatedCounterDto>();
-            var keyMap = dates.ToDictionary(formatorAction, x => x);
-
-            var valuesMap = (from c in counters
-                where keyMap.Keys.Contains(c.Key)
-                select c).ToDictionary(o => o.Key, o => o.Value);
-
-            foreach (var key in keyMap.Keys.Where(key => !valuesMap.ContainsKey(key)))
+            var stats = new Dictionary<DateTime, long>();
+            using (var repository = _storage.Repository.OpenSession())
             {
-                valuesMap.Add(key, 0);
+                foreach(var item in dates)
+                {
+                    var id = Repository.GetId(typeof(Counter), formatorAction(item));
+                    var counters = repository.Load<Counter>(id);
+
+                    if (counters != null)
+                        stats.Add(item, counters.Value);
+                    else
+                        stats.Add(item, 0);
+                }
             }
 
-            return keyMap.ToDictionary(k => k.Value, k => valuesMap[k.Key]);*/
-            return new Dictionary<DateTime, long>();
+            return stats;
         }
         public StatisticsDto GetStatistics()
         {
@@ -304,7 +306,7 @@ namespace Hangfire.Raven.Storage
                 return new JobDetailsDto
                 {
                     CreatedAt = job.CreatedAt,
-                    ExpireAt = job.ExpireAt,
+                    ExpireAt = repository.Advanced.GetExpire(job),
                     Job = DeserializeJob(job.InvocationData),
                     History = job.History,
                     Properties = job.Parameters

@@ -1,5 +1,4 @@
-﻿using Hangfire.Raven.Entities.Identity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,5 @@ namespace Hangfire.Raven.Entities
         public string Id { get; set; }
 
         public int Value { get; set; }
-
-        public DateTime? ExpireAt { get; set; }
     }
 }

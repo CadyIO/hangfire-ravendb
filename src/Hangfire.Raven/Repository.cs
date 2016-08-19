@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using Raven.Client.Linq;
 using System.Linq;
 using System.Linq.Expressions;
-using Hangfire.Raven.Entities.Identity;
 using Hangfire.Raven.Extensions;
 using Hangfire.Raven.Listeners;
 using Hangfire.Raven.Storage;

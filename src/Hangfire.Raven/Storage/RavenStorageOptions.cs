@@ -11,7 +11,6 @@ namespace Hangfire.Raven.Storage
         {
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
-            DashboardJobListLimit = 50000;
             TransactionTimeout = TimeSpan.FromMinutes(1);
 
             _clientId = Guid.NewGuid().ToString().Replace("-", String.Empty);
@@ -22,7 +21,6 @@ namespace Hangfire.Raven.Storage
         public TimeSpan JobExpirationCheckInterval { get; set; }
         public TimeSpan CountersAggregateInterval { get; set; }
 
-        public int? DashboardJobListLimit { get; set; }
         public TimeSpan TransactionTimeout { get; set; }
 
         public IEnumerable<string> QueueNames { get; set; }

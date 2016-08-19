@@ -1,5 +1,4 @@
-﻿using Hangfire.Raven.Entities.Identity;
-using System;
+﻿using System;
 
 namespace Hangfire.Raven.Entities
 {

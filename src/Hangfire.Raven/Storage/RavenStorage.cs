@@ -56,11 +56,6 @@ namespace Hangfire.Raven.Storage
             return new RavenConnection(this);
         }
 
-        public override IEnumerable<IServerComponent> GetComponents()
-        {
-            yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
-        }
-
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for Raven job storage:");
