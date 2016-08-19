@@ -1,10 +1,8 @@
 ﻿using Raven.Client;
 using System;
-using Dewey.Net.Types;
 using Raven.Client.Document;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Dewey.Net.Generic;
 using Raven.Abstractions.Data;
 using System.Collections.Concurrent;
 using Raven.Client.Linq;
