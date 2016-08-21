@@ -1,7 +1,6 @@
 ﻿using System;
 using Hangfire.Annotations;
 using Hangfire.Raven.Storage;
-using HangFire.Raven;
 
 namespace Hangfire.Raven.JobQueues
 {

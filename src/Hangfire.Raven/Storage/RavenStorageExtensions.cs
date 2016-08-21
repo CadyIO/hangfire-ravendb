@@ -5,7 +5,7 @@ using Hangfire.Raven;
 using Raven.Client;
 using Raven.Json.Linq;
 
-namespace HangFire.Raven.Storage
+namespace Hangfire.Raven.Storage
 {
     public static class RavenServerStorageExtensions
     {

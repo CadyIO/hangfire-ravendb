@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Raven.Entities;
-using HangFire.Raven;
 using Hangfire.Raven.JobQueues;
 using Hangfire.Raven.Storage;
 using Hangfire.Annotations;

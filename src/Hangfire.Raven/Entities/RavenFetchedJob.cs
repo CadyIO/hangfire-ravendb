@@ -1,6 +1,5 @@
 ﻿using Hangfire.Annotations;
 using Hangfire.Storage;
-using HangFire.Raven;
 using Hangfire.Raven.Storage;
 
 namespace Hangfire.Raven.Entities

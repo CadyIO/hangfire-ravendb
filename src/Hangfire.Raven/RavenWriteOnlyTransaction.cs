@@ -5,13 +5,11 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
-using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage.Monitoring;
 using Raven.Client;
 using Raven.Abstractions.Data;
-using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven
 {

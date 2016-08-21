@@ -22,11 +22,10 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Raven.Client;
-using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Raven.DistributedLocks;
-using HangFire.Raven.Storage;
+using static Hangfire.Raven.Entities.RavenJob;
 
 namespace Hangfire.Raven
 {
@@ -85,14 +84,12 @@ namespace Hangfire.Raven
 
             using (var repository = _storage.Repository.OpenSession())
             {
-                var invocationData = InvocationData.Serialize(job);
-
                 var guid = Guid.NewGuid().ToString();
 
                 var ravenJob = new RavenJob
                 {
                     Id = Repository.GetId(typeof(RavenJob), guid),
-                    InvocationData = invocationData,
+                    Job = JobWrapper.Create(job),
                     CreatedAt = createdAt,
                     Parameters = parameters
                 };
@@ -119,25 +116,12 @@ namespace Hangfire.Raven
                 {
                     return null;
                 }
-
-                Job job = null;
-                JobLoadException loadException = null;
-
-                try
-                {
-                    job = jobData.InvocationData.Deserialize();
-                }
-                catch (JobLoadException ex)
-                {
-                    loadException = ex;
-                }
-
+                var job = jobData.Job.GetJob();
                 return new JobData
                 {
                     Job = job,
                     State = jobData.StateData?.Name,
-                    CreatedAt = jobData.CreatedAt,
-                    LoadException = loadException
+                    CreatedAt = jobData.CreatedAt
                 };
             }
         }

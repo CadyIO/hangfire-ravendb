@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Storage;
-using HangFire.Raven;
 using Raven.Client.Linq;
 using System.Linq;
 using Hangfire.Raven.Entities;

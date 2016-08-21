@@ -13,8 +13,9 @@ using Hangfire.Raven.Listeners;
 using Hangfire.Raven.Storage;
 using Raven.Client.Indexes;
 using Hangfire.Raven.Indexes;
+using Raven.Imports.Newtonsoft.Json;
 
-namespace HangFire.Raven
+namespace Hangfire.Raven
 {
     public class RepositoryConfig
     {
@@ -65,7 +66,15 @@ namespace HangFire.Raven
                 {
                     ConnectionStringName = _config.ConnectionString,
                     ApiKey = _config.APIKey,
-                    DefaultDatabase = _config.Database
+                    DefaultDatabase = _config.Database,
+                    Conventions = new DocumentConvention()
+                    {
+                        CustomizeJsonSerializer = delegate (JsonSerializer input)
+                        {
+                            input.Converters.Add(new RavenJsonPropertyConverter());
+                            input.Converters.Add(new RavenJsonMethodConverter());
+                        }
+                    }
                 };
             }
             else
@@ -74,7 +83,15 @@ namespace HangFire.Raven
                 {
                     Url = _config.ConnectionUrl,
                     ApiKey = _config.APIKey,
-                    DefaultDatabase = _config.Database
+                    DefaultDatabase = _config.Database,
+                    Conventions = new DocumentConvention()
+                    {
+                        CustomizeJsonSerializer = delegate (JsonSerializer input)
+                        {
+                            input.Converters.Add(new RavenJsonPropertyConverter());
+                            input.Converters.Add(new RavenJsonMethodConverter());
+                        }
+                    }
                 };
             }
 

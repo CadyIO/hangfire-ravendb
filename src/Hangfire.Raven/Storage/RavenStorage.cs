@@ -5,7 +5,6 @@ using Hangfire.Server;
 using Hangfire.Storage;
 using Raven.Client.Document;
 using Hangfire.Raven.JobQueues;
-using HangFire.Raven;
 using Raven.Client.Indexes;
 using Hangfire.Raven.Indexes;
 

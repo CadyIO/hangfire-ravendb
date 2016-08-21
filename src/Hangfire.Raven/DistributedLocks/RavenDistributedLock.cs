@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using Hangfire.Annotations;
-using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using System;
 using Raven.Json.Linq;
-using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven.DistributedLocks
 {

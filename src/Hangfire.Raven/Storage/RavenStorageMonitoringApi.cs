@@ -5,7 +5,6 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
-using HangFire.Raven;
 using Hangfire.Raven.Entities;
 using Raven.Client;
 using Raven.Client.Linq;
@@ -14,7 +13,6 @@ using Raven.Client.Indexes;
 using Raven.Abstractions.Indexing;
 using Raven.Abstractions.Data;
 using Hangfire.Raven.Indexes;
-using HangFire.Raven.Storage;
 
 namespace Hangfire.Raven.Storage
 {
@@ -307,7 +305,7 @@ namespace Hangfire.Raven.Storage
                 {
                     CreatedAt = job.CreatedAt,
                     ExpireAt = repository.Advanced.GetExpire(job),
-                    Job = DeserializeJob(job.InvocationData),
+                    Job = job.Job.GetJob(),
                     History = job.History,
                     Properties = job.Parameters
                 };
@@ -433,7 +431,7 @@ namespace Hangfire.Raven.Storage
                 let stateData = job.StateData.Data != null
                     ? new Dictionary<string, string>(job.StateData.Data, StringComparer.OrdinalIgnoreCase)
                     : null
-                let dto = selector(job, DeserializeJob(job.InvocationData), stateData)
+                let dto = selector(job, job.Job.GetJob(), stateData)
                 select new KeyValuePair<string, TDto>(job.Id.Split(new char[] { '/' },2)[1], dto);
 
             return new JobList<TDto>(result);
