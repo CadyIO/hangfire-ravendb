@@ -1,16 +1,16 @@
-﻿using Hangfire.Raven.Entities.Identity;
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Hangfire.Raven.Entities
 {
-    public class RavenSet : BaseEntity
+    public class RavenSet
     {
-        public string Key { get; set; }
+        public RavenSet()
+        {
+            this.Scores = new Dictionary<string, double>();
+        }
 
-        public double Score { get; set; }
-
-        public string Value { get; set; }
-
-        public DateTime? ExpireAt { get; set; }
+        public string Id { get; set; }
+        public Dictionary<string, double> Scores { get; set; }
     }
 }

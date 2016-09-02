@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace Hangfire.Raven.Listeners
 {
-    public class TakeNewestConflictResolutionListener : IDocumentConflictListener
+    public class TakeNewestConflictResolutionListener 
+        : IDocumentConflictListener
     {
         public bool TryResolveConflict(string key, JsonDocument[] conflictedDocs, out JsonDocument resolvedDocument)
         {

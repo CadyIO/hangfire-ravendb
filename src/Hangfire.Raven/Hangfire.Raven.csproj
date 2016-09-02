@@ -40,43 +40,24 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dewey, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dewey.5.0.0\lib\net45\Dewey.dll</HintPath>
+    <Reference Include="Hangfire.Core, Version=1.6.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\Hangfire.Core.1.6.3\lib\net45\Hangfire.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Hangfire.Core, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hangfire.Core.1.6.2\lib\net45\Hangfire.Core.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Hangfire.SqlServer, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hangfire.SqlServer.1.6.2\lib\net45\Hangfire.SqlServer.dll</HintPath>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin">
-      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="Raven.Abstractions, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Database.3.0.30153\lib\net45\Raven.Abstractions.dll</HintPath>
+      <HintPath>..\..\..\..\packages\RavenDB.Client.3.0.30115\lib\net45\Raven.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Raven.Client.Lightweight, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Client.3.0.30153\lib\net45\Raven.Client.Lightweight.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Raven.Database, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Database.3.0.30153\lib\net45\Raven.Database.dll</HintPath>
+      <HintPath>..\..\..\..\packages\RavenDB.Client.3.0.30115\lib\net45\Raven.Client.Lightweight.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -92,6 +73,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assemblies.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLock.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLockException.cs" />
     <Compile Include="Entities\AggregatedCounter.cs" />
@@ -100,16 +82,13 @@
     <Compile Include="Entities\EnqueuedAndFetchedCount.cs" />
     <Compile Include="Entities\JobQueue.cs" />
     <Compile Include="Entities\RavenHash.cs" />
-    <Compile Include="Entities\Identity\BaseEntity.cs" />
     <Compile Include="Entities\RavenList.cs" />
     <Compile Include="Entities\RavenSet.cs" />
-    <Compile Include="ExpirationManager.cs" />
-    <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\RavenJob.cs" />
-    <Compile Include="Entities\State.cs" />
     <Compile Include="Entities\RavenServer.cs" />
-    <Compile Include="Entities\ServerData.cs" />
     <Compile Include="Extensions\DatabaseExtensions.cs" />
+    <Compile Include="Indexes\Hangfire_RavenJobs.cs" />
+    <Compile Include="Indexes\Raven_DocumentsByEntityName.cs" />
     <Compile Include="JobQueues\IPersistentJobQueue.cs" />
     <Compile Include="JobQueues\IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="JobQueues\IPersistentJobQueueProvider.cs" />
@@ -120,8 +99,10 @@
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JobQueues\RavenJobQueueProvider.cs" />
+    <Compile Include="RavenJsonConverters.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="JobQueues\RavenJobQueueMonitoringApi.cs" />
+    <Compile Include="Storage\RavenStorageMonitoringApi.cs" />
     <Compile Include="Storage\RavenStorage.cs" />
     <Compile Include="Storage\RavenStorageExtensions.cs" />
     <Compile Include="Storage\RavenStorageOptions.cs" />
@@ -138,12 +119,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Hangfire.Raven.nuspec" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Raven.Studio.Html5.zip">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
