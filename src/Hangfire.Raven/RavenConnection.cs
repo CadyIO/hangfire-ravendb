@@ -19,12 +19,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Common;
-using Hangfire.Server;
-using Hangfire.Storage;
-using Raven.Client;
+using Hangfire.Raven.DistributedLocks;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
-using Hangfire.Raven.DistributedLocks;
+using Hangfire.Server;
+using Hangfire.Storage;
 using static Hangfire.Raven.Entities.RavenJob;
 
 namespace Hangfire.Raven
@@ -40,20 +39,14 @@ namespace Hangfire.Raven
             _storage = ravenStorage;
         }
 
-        public override IWriteOnlyTransaction CreateWriteTransaction()
-        {
-            return new RavenWriteOnlyTransaction(_storage);
-        }
+        public override IWriteOnlyTransaction CreateWriteTransaction() => new RavenWriteOnlyTransaction(_storage);
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
-        {
-            return new RavenDistributedLock(_storage, string.Format("HangFire/{0}", resource), timeout);
-        }
-
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) => new RavenDistributedLock(_storage, string.Format("HangFire/{0}", resource), timeout);
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             queues.ThrowIfNull("queues");
+
             if (queues.Length == 0) {
                 throw new ArgumentNullException("queues");
             }
@@ -70,6 +63,7 @@ namespace Hangfire.Raven
             }
 
             var persistentQueue = providers[0].GetJobQueue();
+
             return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
@@ -82,12 +76,10 @@ namespace Hangfire.Raven
             job.ThrowIfNull("job");
             parameters.ThrowIfNull("parameters");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var guid = Guid.NewGuid().ToString();
 
-                var ravenJob = new RavenJob
-                {
+                var ravenJob = new RavenJob {
                     Id = Repository.GetId(typeof(RavenJob), guid),
                     Job = JobWrapper.Create(job),
                     CreatedAt = createdAt,
@@ -107,18 +99,17 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenJob), key);
                 var jobData = repository.Load<RavenJob>(id);
 
-                if (jobData == null)
-                {
+                if (jobData == null) {
                     return null;
                 }
+
                 var job = jobData.Job.GetJob();
-                return new JobData
-                {
+
+                return new JobData {
                     Job = job,
                     State = jobData.StateData?.Name,
                     CreatedAt = jobData.CreatedAt
@@ -130,8 +121,7 @@ namespace Hangfire.Raven
         {
             jobId.ThrowIfNull("jobId");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenJob), jobId);
                 var job = repository.Load<RavenJob>(id);
 
@@ -148,12 +138,12 @@ namespace Hangfire.Raven
             jobId.ThrowIfNull("jobId");
             name.ThrowIfNull("name");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenJob), jobId);
                 var job = repository.Load<RavenJob>(id);
 
                 job.Parameters[name] = value;
+
                 repository.SaveChanges();
             }
         }
@@ -163,23 +153,23 @@ namespace Hangfire.Raven
             jobId.ThrowIfNull("jobId");
             name.ThrowIfNull("name");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenJob), jobId);
                 var job = repository.Load<RavenJob>(id);
 
                 string value;
-                if (!job.Parameters.TryGetValue(name, out value))
-                {
-                    if (name == "RetryCount")
-                    {
+
+                if (!job.Parameters.TryGetValue(name, out value)) {
+                    if (name == "RetryCount") {
                         job.Parameters["RetryCount"] = "0";
                         repository.SaveChanges();
 
                         return "0";
                     }
+
                     return null;
                 }
+
                 return value;
             }
         }
@@ -188,13 +178,13 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
-                if (set == null)
+                if (set == null) {
                     return null;
+                }
 
                 return new HashSet<string>(set.Scores.Keys);
             }
@@ -208,13 +198,13 @@ namespace Hangfire.Raven
                 throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
             }
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
-                if (set == null)
+                if (set == null) {
                     return null;
+                }
 
                 return set.Scores.OrderBy(a => a.Value).Select(a => a.Key).FirstOrDefault();
             }
@@ -225,22 +215,19 @@ namespace Hangfire.Raven
             key.ThrowIfNull("key");
             keyValuePairs.ThrowIfNull("keyValuePairs");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenHash), key);
                 var result = repository.Load<RavenHash>(id);
 
-                if (result == null)
-                {
-                    result = new RavenHash()
-                    {
+                if (result == null) {
+                    result = new RavenHash() {
                         Id = id
                     };
+
                     repository.Store(result);
                 }
 
-                foreach (var keyValuePair in keyValuePairs)
-                {
+                foreach (var keyValuePair in keyValuePairs) {
                     result.Fields[keyValuePair.Key] = keyValuePair.Value;
                 }
 
@@ -252,8 +239,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var result = repository.Load<RavenHash>(Repository.GetId(typeof(RavenHash), key));
 
                 return result?.Fields;
@@ -265,18 +251,16 @@ namespace Hangfire.Raven
             serverId.ThrowIfNull("serverId");
             context.ThrowIfNull("context");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenServer), serverId);
                 var server = repository.Load<RavenServer>(id);
 
-                if(server == null)
-                {
-                    server = new RavenServer()
-                    {
+                if (server == null) {
+                    server = new RavenServer() {
                         Id = id,
                         Data = new RavenServer.ServerData()
                     };
+
                     repository.Store(server);
                 }
 
@@ -294,9 +278,9 @@ namespace Hangfire.Raven
         {
             serverId.ThrowIfNull("serverId");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenServer), serverId);
+
                 repository.Delete(id);
 
                 repository.SaveChanges();
@@ -307,20 +291,18 @@ namespace Hangfire.Raven
         {
             serverId.ThrowIfNull("serverId");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenServer), serverId);
                 var server = repository.Load<RavenServer>(id);
-                
-                if (server == null)
-                {
-                    server = new RavenServer
-                    {
+
+                if (server == null) {
+                    server = new RavenServer {
                         Id = id
                     };
                 }
 
                 server.LastHeartbeat = DateTime.UtcNow;
+
                 repository.SaveChanges();
             }
         }
@@ -331,8 +313,7 @@ namespace Hangfire.Raven
                 throw new ArgumentException("The `timeOut` value must be positive.", "timeOut");
             }
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var heartBeatCutOff = DateTime.UtcNow.Add(timeOut.Negate());
 
                 var results = repository.Query<RavenServer>()
@@ -342,6 +323,7 @@ namespace Hangfire.Raven
                 foreach (var item in results) {
                     repository.Delete(item);
                 }
+
                 repository.SaveChanges();
 
                 return results.Count;
@@ -352,13 +334,13 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
-                if (set == null)
+                if (set == null) {
                     return 0;
+                }
 
                 return set.Scores.Count;
             }
@@ -368,13 +350,13 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
-                if (set == null)
+                if (set == null) {
                     return new List<string>();
+                }
 
                 return set.Scores.Skip(startingFrom - 1)
                             .Take(endingAt - startingFrom + 1)
@@ -387,15 +369,15 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var id = Repository.GetId(typeof(RavenSet), key);
                 var set = repository.Load<RavenSet>(id);
 
                 var expireAt = repository.Advanced.GetExpire(set);
 
-                if(expireAt == null)
+                if (expireAt == null) {
                     return TimeSpan.FromSeconds(-1);
+                }
 
                 return expireAt.Value - DateTime.UtcNow;
             }
@@ -405,8 +387,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var values = repository.Query<AggregatedCounter>()
                                 .Where(t => t.Key == key)
                                 .Select(t => t.Value)
@@ -420,8 +401,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var ravenHash = repository.Load<RavenHash>(Repository.GetId(typeof(RavenHash), key));
 
                 return ravenHash.Fields.Count;
@@ -432,11 +412,11 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var ravenHash = repository.Load<RavenHash>(Repository.GetId(typeof(RavenHash), key));
 
                 var expireAt = repository.Advanced.GetExpire(ravenHash);
+
                 if (!expireAt.HasValue) {
                     return TimeSpan.FromSeconds(-1);
                 }
@@ -450,13 +430,14 @@ namespace Hangfire.Raven
             key.ThrowIfNull("key");
             name.ThrowIfNull("name");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 var ravenHash = repository.Load<RavenHash>(Repository.GetId(typeof(RavenHash), key));
 
                 string result;
-                if(!ravenHash.Fields.TryGetValue(name, out result))
+
+                if (!ravenHash.Fields.TryGetValue(name, out result)) {
                     return null;
+                }
 
                 return result;
             }
@@ -466,13 +447,10 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
-                var count = repository.Query<RavenList>()
+            using (var repository = _storage.Repository.OpenSession()) {
+                return repository.Query<RavenList>()
                                 .Where(t => t.Key == key)
                                 .Count();
-
-                return count;
             }
         }
 
@@ -480,8 +458,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
+            using (var repository = _storage.Repository.OpenSession()) {
                 // TODO: Implement!
 
                 return TimeSpan.FromSeconds(-1);
@@ -492,16 +469,13 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
-                var results = repository.Query<RavenList>()
+            using (var repository = _storage.Repository.OpenSession()) {
+                return repository.Query<RavenList>()
                                 .Where(t => t.Key == key)
                                 .Select(t => t.Value)
                                 .Skip(startingFrom - 1)
                                 .Take(endingAt - startingFrom + 1)
                                 .ToList();
-
-                return results;
             }
         }
 
@@ -509,14 +483,11 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession())
-            {
-                var results = repository.Query<RavenList>()
+            using (var repository = _storage.Repository.OpenSession()) {
+                return repository.Query<RavenList>()
                                 .Where(t => t.Key == key)
                                 .Select(t => t.Value)
                                 .ToList();
-
-                return results;
             }
         }
     }

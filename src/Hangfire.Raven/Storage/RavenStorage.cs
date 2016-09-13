@@ -1,12 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Hangfire.Logging;
-using Hangfire.Server;
-using Hangfire.Storage;
-using Raven.Client.Document;
-using Hangfire.Raven.JobQueues;
-using Raven.Client.Indexes;
 using Hangfire.Raven.Indexes;
+using Hangfire.Raven.JobQueues;
+using Hangfire.Storage;
+using Raven.Client.Indexes;
 
 namespace Hangfire.Raven.Storage
 {

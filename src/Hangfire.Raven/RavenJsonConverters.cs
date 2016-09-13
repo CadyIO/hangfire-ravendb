@@ -1,11 +1,8 @@
-﻿using Raven.Imports.Newtonsoft.Json;
-using Raven.Imports.Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Raven.Imports.Newtonsoft.Json;
+using Raven.Imports.Newtonsoft.Json.Linq;
 
 namespace Hangfire.Raven
 {
@@ -41,10 +38,7 @@ namespace Hangfire.Raven
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public override bool CanConvert(Type type)
-        {
-            return typeof(T).IsAssignableFrom(type);
-        }
+        public override bool CanConvert(Type type) => typeof(T).IsAssignableFrom(type);
 
         /// <summary>
         /// Overriding the ReadJson of JsonConvert
@@ -57,8 +51,8 @@ namespace Hangfire.Raven
         public override object ReadJson(JsonReader reader, Type type, object existingValue, JsonSerializer serializer)
         {
             T toReturn;
-            switch (reader.TokenType)
-            {
+
+            switch (reader.TokenType) {
                 case JsonToken.StartArray:
                     toReturn = Read(type, JArray.Load(reader), serializer);
                     break;
@@ -84,7 +78,7 @@ namespace Hangfire.Raven
             serializer.Serialize(writer, Write((T)value, serializer));
         }
     }
-    
+
     public class RavenJsonMethodConverter
         : RavenJsonConverterBase<MethodInfo>
     {
@@ -92,25 +86,14 @@ namespace Hangfire.Raven
         {
             var splitted = value.ToString().Split(';');
 
-            if (splitted.Count() == 3)
-            {
-                var assembly = Assemblies.Get().Where(a => a.GetName().Name == splitted[0]).First();
-                var assemblyClass = Assemblies.GetClass(assembly, splitted[1]);
-
-                if (assemblyClass != null)
-                    return assemblyClass.GetMethod(splitted[2]);
+            if (splitted.Count() == 3) {
+                return Assembly.GetEntryAssembly().GetType(splitted[1]).GetMethod(splitted[2]);
             }
 
             return null;
         }
 
-        protected override object Write(MethodInfo value, JsonSerializer serializer)
-        {
-            return string.Format("{0};{1};{2}",
-                        value.DeclaringType.Assembly.GetName().Name,
-                        value.DeclaringType.FullName,
-                        value.Name);
-        }
+        protected override object Write(MethodInfo value, JsonSerializer serializer) => $"{value.DeclaringType.GetTypeInfo().Assembly.GetName().Name};{value.DeclaringType.FullName};{value.Name}";
     }
 
     public class RavenJsonPropertyConverter
@@ -120,23 +103,13 @@ namespace Hangfire.Raven
         {
             var splitted = value.ToString().Split(';');
 
-            if (splitted.Count() == 3)
-            {
-                var assembly = Assemblies.Get().Where(a => a.GetName().Name == splitted[0]).First();
-
-                var assemblyType = Assemblies.GetClass(assembly, splitted[1]);
-                if (assemblyType != null)
-                    return assemblyType.GetProperty(splitted[2]);
+            if (splitted.Count() == 3) {
+                return Assembly.GetEntryAssembly().GetType(splitted[1]).GetProperty(splitted[2]);
             }
+
             return null;
         }
 
-        protected override object Write(PropertyInfo value, JsonSerializer serializer)
-        {
-            return string.Format("{0};{1};{2}",
-                                    value.DeclaringType.Assembly.GetName().Name,
-                                    value.DeclaringType.FullName,
-                                    value.Name);
-        }
+        protected override object Write(PropertyInfo value, JsonSerializer serializer) => $"{value.DeclaringType.GetTypeInfo().Assembly.GetName().Name};{value.DeclaringType.FullName};{value.Name}";
     }
 }

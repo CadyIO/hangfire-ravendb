@@ -13,7 +13,7 @@ namespace Hangfire.Raven.Storage
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             TransactionTimeout = TimeSpan.FromMinutes(1);
 
-            _clientId = Guid.NewGuid().ToString().Replace("-", String.Empty);
+            _clientId = Guid.NewGuid().ToString().Replace("-", string.Empty);
         }
 
         public TimeSpan InvisibilityTimeout { get; set; }
@@ -25,8 +25,7 @@ namespace Hangfire.Raven.Storage
 
         public IEnumerable<string> QueueNames { get; set; }
 
-        public string ClientId
-        {
+        public string ClientId {
             get { return _clientId; }
         }
 

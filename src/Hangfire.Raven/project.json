@@ -1,0 +1,131 @@
+{
+    "title": "Hangfire.Raven",
+    "version": "2.0.0",
+    "description": "RavenDB job storage for Hangfire",
+    "copyright": "Copyright @ 2016 Cady, LLC",
+    "authors": [
+        "Cady <contact@cady.io>"
+    ],
+    "buildOptions": {
+        "allowUnsafe": true,
+        "debugType": "portable",
+        "preserveCompilationContext": true
+    },
+    "packOptions": {
+        "tags": [
+            "Hangfire",
+            "AspNet",
+            "MVC",
+            "OWIN",
+            "RavenDB",
+            "Long-Running",
+            "Background",
+            "Fire-And-Forget",
+            "Delayed",
+            "Recurring",
+            "Tasks",
+            "Jobs",
+            "Scheduler",
+            "Threading",
+            "Queues"
+        ],
+        "iconUrl": "https://avatars2.githubusercontent.com/u/7880472?v=3&s=200",
+        "projectUrl": "https://github.com/cady-io/hangfire-ravendb",
+        "licenseUrl": "http://www.gnu.org/licenses/lgpl-3.0.html",
+        "owners": [
+            "Cady <contact@cady.io>"
+        ],
+        "repository": {
+            "type": "git",
+            "url": "https://github.com/cady-io/hangfire-ravendb"
+        },
+        "summary": "RavenDB job storage for Hangfire"
+    },
+    "dependencies": {
+        "Hangfire.Core": "1.6.4",
+        "Newtonsoft.Json": "9.0.1"
+    },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Data": "4.0.0.0",
+                "System.Reflection": "4.0.0.0"
+            },
+            "dependencies": {
+                "RavenDB.Client": "3.5.0-rc-35169"
+            }
+        },
+        "net451": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "net452": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "net46": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "net461": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "dnx451": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "dnx46": {
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "netcoreapp1.0": {
+            "imports": [
+                "dotnet5.6",
+                "dnxcore50",
+                "portable-net45+win8"
+            ],
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "Microsoft.NETCore.App": {
+                    "version": "1.0.0",
+                    "type": "platform"
+                },
+                "NETStandard.Library": "1.6.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        },
+        "netstandard1.6": {
+            "imports": [
+                "dotnet5.6",
+                "dnxcore50",
+                "portable-net45+win8"
+            ],
+            "dependencies": {
+                "Microsoft.Extensions.DependencyModel": "1.0.0",
+                "NETStandard.Library": "1.6.0",
+                "RavenDB.Client": "3.5.0-rc-35169",
+                "System.Data.Common": "4.1.0"
+            }
+        }
+    }
+}

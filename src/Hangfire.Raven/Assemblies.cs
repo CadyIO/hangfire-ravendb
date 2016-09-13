@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+#if !NET45
+using Microsoft.Extensions.DependencyModel;
+#endif
 
 namespace Hangfire.Raven
 {
@@ -18,7 +19,14 @@ namespace Hangfire.Raven
         /// <returns></returns>
         public static IEnumerable<Assembly> Get()
         {
+#if NET45
             return AppDomain.CurrentDomain.GetAssemblies().Where(a => a != null);
+#else
+            return (from compilationLibrary in DependencyContext.Default.CompileLibraries
+                    where compilationLibrary.Name.Contains(typeof(Assemblies).Namespace)
+                    select Assembly.Load(new AssemblyName(compilationLibrary.Name)))
+                    .ToList();
+#endif
         }
 
         /// <summary>
@@ -32,6 +40,15 @@ namespace Hangfire.Raven
             return (from t in assembly.GetTypes()
                     where t.FullName == type //&& !t.IsAbstract && t.IsClass
                     select t).FirstOrDefault();
+        }
+
+        public static string GetAssemblyName(MemberInfo value)
+        {
+#if NET45
+            return value.DeclaringType.Assembly.GetName().Name;
+#else
+            return value.DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+#endif
         }
     }
 }

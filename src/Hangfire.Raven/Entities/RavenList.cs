@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Hangfire.Raven.Entities
+﻿namespace Hangfire.Raven.Entities
 {
     public class RavenList
     {

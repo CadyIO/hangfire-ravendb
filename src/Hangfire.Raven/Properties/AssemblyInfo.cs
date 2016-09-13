@@ -2,16 +2,18 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Hangfire Raven")]
-[assembly: AssemblyDescription("Raven job storage for Hangfire")]
-[assembly: Guid("3d96bf2f-8854-4872-aee3-faf81d121a4d")]
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Hangfire.Raven.Core")]
+[assembly: AssemblyTrademark("")]
 
-[assembly: InternalsVisibleTo("Hangfire.Raven.Tests")]
-// Allow the generation of mocks for internal types
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: AssemblyCompany("Axial Commerce")]
-[assembly: AssemblyProduct("Hangfire Raven")]
-[assembly: AssemblyCopyright("Copyright © Axial Commerce")]
-[assembly: AssemblyVersion("1.8")]
-[assembly: AssemblyFileVersion("1.8")]
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
 
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("ba18f6bf-5613-4b9d-a57a-c05c51148ec5")]

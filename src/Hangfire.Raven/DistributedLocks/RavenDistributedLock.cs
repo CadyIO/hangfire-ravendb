@@ -1,12 +1,10 @@
-﻿using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
-using System;
-using Raven.Json.Linq;
 
 namespace Hangfire.Raven.DistributedLocks
 {
@@ -36,7 +34,7 @@ namespace Hangfire.Raven.DistributedLocks
             _resource = resource;
 
             // -- Skip some locks
-            if(!_skipLocks.Any(a => _resource.StartsWith(a)))
+            if (!_skipLocks.Any(a => _resource.StartsWith(a)))
                 Lock();
         }
 
@@ -47,10 +45,8 @@ namespace Hangfire.Raven.DistributedLocks
 
         private void Lock()
         {
-            using (var session = _storage.Repository.OpenSession())
-            {
-                _distributedLock = new DistributedLock()
-                {
+            using (var session = _storage.Repository.OpenSession()) {
+                _distributedLock = new DistributedLock() {
                     ClientId = _storage.Options.ClientId,
                     Resource = _resource
                 };
@@ -58,14 +54,11 @@ namespace Hangfire.Raven.DistributedLocks
                 session.Store(_distributedLock);
                 session.Advanced.AddExpire(_distributedLock, DateTime.UtcNow + _timeout);
 
-                try
-                {
+                try {
                     // Blocking session!
                     session.Advanced.UseOptimisticConcurrency = true;
                     session.SaveChanges();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     _distributedLock = null;
                     throw new RavenDistributedLockException("Lock already given.", e);
                 }
@@ -76,21 +69,15 @@ namespace Hangfire.Raven.DistributedLocks
 
         private void Release()
         {
-            lock (_lock)
-            {
-                if (_distributedLock != null)
-                {
+            lock (_lock) {
+                if (_distributedLock != null) {
                     // Non blocking session!
-                    try
-                    {
-                        using (var session = _storage.Repository.OpenSession())
-                        {
+                    try {
+                        using (var session = _storage.Repository.OpenSession()) {
                             session.Delete(_distributedLock.Id);
                             session.SaveChanges();
                         }
-                    }
-                    catch
-                    {
+                    } catch {
                         Console.WriteLine("Unable to delete lock: {0}", _resource);
                     }
 
@@ -98,8 +85,7 @@ namespace Hangfire.Raven.DistributedLocks
                 }
 
                 // Stop timer
-                if (_heartbeatTimer != null)
-                {
+                if (_heartbeatTimer != null) {
                     _heartbeatTimer.Dispose();
                     _heartbeatTimer = null;
                 }
@@ -111,21 +97,16 @@ namespace Hangfire.Raven.DistributedLocks
             Console.WriteLine(".Starting heartbeat for resource: {0}", _resource);
             TimeSpan timerInterval = TimeSpan.FromMilliseconds(_timeout.TotalMilliseconds / 3);
 
-            _heartbeatTimer = new Timer(state =>
-            {
-                try
-                {
+            _heartbeatTimer = new Timer(state => {
+                try {
                     Console.WriteLine("..Heartbeat for resource {0}", _resource);
-                    using (var session = _storage.Repository.OpenSession())
-                    {
+                    using (var session = _storage.Repository.OpenSession()) {
                         var distributedLock = session.Load<DistributedLock>(_distributedLock.Id);
-                        
+
                         session.Advanced.AddExpire(distributedLock, DateTime.UtcNow + _timeout);
                         session.SaveChanges();
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     Console.WriteLine("...Unable to update heartbeat on the resource '{0}'", ex, _resource);
                     Release();
                 }
