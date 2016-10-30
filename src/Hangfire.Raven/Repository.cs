@@ -97,8 +97,6 @@ namespace Hangfire.Raven
 
             _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
             _documentStore.Initialize();
-
-            new Hangfire_RavenJobs().Execute(_documentStore);
         }
 
         public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
