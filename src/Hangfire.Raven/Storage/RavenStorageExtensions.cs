@@ -37,7 +37,7 @@ namespace Hangfire.Raven.Storage
             connectionString.ThrowIfNull("connectionString");
 
             var config = new RepositoryConfig() {
-                ConnectionString = connectionString
+                ConnectionStringName = connectionString
             };
             var storage = new RavenStorage(config);
 
@@ -76,7 +76,7 @@ namespace Hangfire.Raven.Storage
             var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database,
-                APIKey = APIKey
+                ApiKey = APIKey
             };
 
             var storage = new RavenStorage(config);

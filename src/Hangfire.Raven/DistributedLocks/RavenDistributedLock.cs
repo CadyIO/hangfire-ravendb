@@ -62,9 +62,9 @@ namespace Hangfire.Raven.DistributedLocks
                     _distributedLock = null;
                     throw new RavenDistributedLockException("Lock already given.", e);
                 }
-
-                Heartbeat();
             }
+
+            Heartbeat();
         }
 
         private void Release()

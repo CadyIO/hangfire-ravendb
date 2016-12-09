@@ -1,7 +1,7 @@
 ﻿{
-    "title": "Hangfire.Raven ConsoleSample",
-    "version": "2.0.0",
-    "description": "RavenDB job storage for Hangfire",
+    "title": "Hangfire.Raven.Examples.Console",
+    "version": "2.1.0",
+    "description": "RavenDB job storage for Hangfire - Console Example",
     "copyright": "Copyright @ 2016 Cady, LLC",
     "authors": [
         "Cady <contact@cady.io>"
@@ -30,6 +30,9 @@
             "Threading",
             "Queues"
         ],
+        "include": [
+            "app.config"
+        ],
         "iconUrl": "https://avatars2.githubusercontent.com/u/7880472?v=3&s=200",
         "projectUrl": "https://github.com/cady-io/hangfire-ravendb",
         "licenseUrl": "http://www.gnu.org/licenses/lgpl-3.0.html",
@@ -40,16 +43,16 @@
             "type": "git",
             "url": "https://github.com/cady-io/hangfire-ravendb"
         },
-        "summary": "RavenDB job storage for Hangfire"
+        "summary": "RavenDB job storage for Hangfire - Console Example"
     },
     "runtimes": {
         "win10-x64": {}
     },
     "frameworks": {
-        "net452": {}
+        "net452": { }
     },
     "dependencies": {
-        "Hangfire.Raven": "2.0.0",
-        "System.ComponentModel.Primitives": "4.1.0"
+        "Hangfire.Raven": "2.1.0",
+        "System.ComponentModel.Primitives": "4.3.0"
     }
 }

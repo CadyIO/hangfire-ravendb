@@ -84,10 +84,19 @@ namespace Hangfire.Raven
     {
         protected override MethodInfo Read(Type type, object value, JsonSerializer serializer)
         {
+            if (value == null) {
+                return null;
+            }
+
             var splitted = value.ToString().Split(';');
 
             if (splitted.Count() == 3) {
-                return Assembly.GetEntryAssembly().GetType(splitted[1]).GetMethod(splitted[2]);
+                var assembly = Assemblies.Get().Where(a => a.GetName().Name == splitted[0]).First();
+                var assemblyClass = Assemblies.GetClass(assembly, splitted[1]);
+
+                if (assemblyClass != null) {
+                    return assemblyClass.GetMethod(splitted[2]);
+                }
             }
 
             return null;
@@ -101,10 +110,19 @@ namespace Hangfire.Raven
     {
         protected override PropertyInfo Read(Type type, object value, JsonSerializer serializer)
         {
+            if (value == null) {
+                return null;
+            }
+
             var splitted = value.ToString().Split(';');
 
             if (splitted.Count() == 3) {
-                return Assembly.GetEntryAssembly().GetType(splitted[1]).GetProperty(splitted[2]);
+                var assembly = Assemblies.Get().Where(a => a.GetName().Name == splitted[0]).First();
+                var assemblyType = Assemblies.GetClass(assembly, splitted[1]);
+
+                if (assemblyType != null) {
+                    return assemblyType.GetProperty(splitted[2]);
+                }
             }
 
             return null;

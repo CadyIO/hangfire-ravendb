@@ -13,20 +13,20 @@ namespace Hangfire.Raven
 {
     public class RepositoryConfig
     {
-        public string ConnectionString { get; set; }
+        public string ConnectionStringName { get; set; }
         public string ConnectionUrl { get; set; }
         public string Database { get; set; }
-        public string APIKey { get; set; }
+        public string ApiKey { get; set; }
     }
 
     public class RepositoryObserver<T>
         : IObserver<T>
     {
-        private Action<T> action;
+        private Action<T> _action;
 
         public RepositoryObserver(Action<T> input)
         {
-            this.action = input;
+            this._action = input;
         }
 
         public void OnCompleted()
@@ -41,7 +41,7 @@ namespace Hangfire.Raven
 
         public void OnNext(T value)
         {
-            this.action.Invoke(value);
+            this._action.Invoke(value);
         }
     }
 
@@ -54,11 +54,9 @@ namespace Hangfire.Raven
         {
             _config = config;
 
-            if (!string.IsNullOrEmpty(_config.ConnectionString)) {
+            if (!string.IsNullOrEmpty(_config.ConnectionStringName)) {
                 _documentStore = new DocumentStore {
-                    ConnectionStringName = _config.ConnectionString,
-                    ApiKey = _config.APIKey,
-                    DefaultDatabase = _config.Database,
+                    ConnectionStringName = _config.ConnectionStringName,
                     Conventions = new DocumentConvention() {
                         CustomizeJsonSerializer = delegate (JsonSerializer input) {
                             input.Converters.Add(new RavenJsonPropertyConverter());
@@ -69,7 +67,7 @@ namespace Hangfire.Raven
             } else {
                 _documentStore = new DocumentStore {
                     Url = _config.ConnectionUrl,
-                    ApiKey = _config.APIKey,
+                    ApiKey = _config.ApiKey,
                     DefaultDatabase = _config.Database,
                     Conventions = new DocumentConvention() {
                         CustomizeJsonSerializer = delegate (JsonSerializer input) {

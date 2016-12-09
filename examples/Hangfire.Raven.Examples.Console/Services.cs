@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
-using Hangfire;
 
-namespace ConsoleSample
+namespace Hangfire.Raven.Examples.Console
 {
     public class Services
     {
@@ -23,7 +22,7 @@ namespace ConsoleSample
         [AutomaticRetry(Attempts = 0)]
         public void Error()
         {
-            Console.WriteLine("Beginning error task...");
+            System.Console.WriteLine("Beginning error task...");
             throw new InvalidOperationException(null, new FileLoadException());
         }
 
@@ -42,7 +41,7 @@ namespace ConsoleSample
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
-            Console.WriteLine("Finished task: " + number);
+            System.Console.WriteLine("Finished task: " + number);
         }
 
         public void Cancelable(int iterationCount, IJobCancellationToken token)
@@ -52,14 +51,14 @@ namespace ConsoleSample
                 for (var i = 1; i <= iterationCount; i++)
                 {
                     Thread.Sleep(1000);
-                    Console.WriteLine("Performing step {0} of {1}...", i, iterationCount);
+                    System.Console.WriteLine("Performing step {0} of {1}...", i, iterationCount);
 
                     token.ThrowIfCancellationRequested();
                 }
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine("Cancellation requested, exiting...");
+                System.Console.WriteLine("Cancellation requested, exiting...");
                 throw;
             }
         }
@@ -67,7 +66,7 @@ namespace ConsoleSample
         [DisplayName("Name: {0}")]
         public void Args(string name, int authorId, DateTime createdAt)
         {
-            Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
+            System.Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
         }
 
         public void Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
@@ -99,12 +98,12 @@ namespace ConsoleSample
 
         public void Write(char character)
         {
-            Console.Write(character);
+            System.Console.Write(character);
         }
 
         public void WriteBlankLine()
         {
-            Console.WriteLine();
+            System.Console.WriteLine();
         }
     }
 }
