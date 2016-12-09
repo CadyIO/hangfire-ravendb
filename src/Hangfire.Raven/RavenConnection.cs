@@ -77,11 +77,13 @@ namespace Hangfire.Raven
             parameters.ThrowIfNull("parameters");
 
             using (var repository = _storage.Repository.OpenSession()) {
+                var invocationData = InvocationData.Serialize(job);
+
                 var guid = Guid.NewGuid().ToString();
 
                 var ravenJob = new RavenJob {
                     Id = Repository.GetId(typeof(RavenJob), guid),
-                    Job = JobWrapper.Create(job),
+                    InvocationData = invocationData,
                     CreatedAt = createdAt,
                     Parameters = parameters
                 };
@@ -107,12 +109,23 @@ namespace Hangfire.Raven
                     return null;
                 }
 
-                var job = jobData.Job.GetJob();
+                Job job = null;
+                JobLoadException loadException = null;
+
+                try
+                {
+                    job = jobData.InvocationData.Deserialize();
+                }
+                catch (JobLoadException ex)
+                {
+                    loadException = ex;
+                }
 
                 return new JobData {
                     Job = job,
                     State = jobData.StateData?.Name,
-                    CreatedAt = jobData.CreatedAt
+                    CreatedAt = jobData.CreatedAt,
+                    LoadException = loadException
                 };
             }
         }

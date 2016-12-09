@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
@@ -15,31 +13,9 @@ namespace Hangfire.Raven.Entities
             this.Parameters = new Dictionary<string, string>();
             this.History = new List<StateHistoryDto>();
         }
-        public class JobWrapper
-        {
-            public IEnumerable<object> Arguments { get; set; }
-            public Type Type { get; set; }
-            public MethodInfo Method { get; set; }
-
-            public Job GetJob()
-            {
-                return new Job(this.Type, this.Method, this.Arguments.ToArray());
-            }
-
-            public static JobWrapper Create(Job job)
-            {
-                var toReturn = new JobWrapper();
-
-                toReturn.Arguments = job.Args;
-                toReturn.Method = job.Method;
-                toReturn.Type = job.Type;
-
-                return toReturn;
-            }
-        }
 
         public string Id { get; set; }
-        public JobWrapper Job { get; set; }
+        public InvocationData InvocationData { get; set; }
         public IDictionary<string, string> Parameters { get; set; }
         public DateTime CreatedAt { get; set; }
 
