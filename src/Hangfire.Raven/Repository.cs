@@ -25,7 +25,7 @@ namespace Hangfire.Raven
 
         public RepositoryObserver(Action<T> input)
         {
-            this._action = input;
+            _action = input;
         }
 
         public void OnCompleted()
@@ -40,7 +40,7 @@ namespace Hangfire.Raven
 
         public void OnNext(T value)
         {
-            this._action.Invoke(value);
+            _action.Invoke(value);
         }
     }
 

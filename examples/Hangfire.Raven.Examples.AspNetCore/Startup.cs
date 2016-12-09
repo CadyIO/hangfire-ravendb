@@ -62,8 +62,7 @@ namespace Hangfire.Raven.Examples.AspNetCore
             app.UseHangfireDashboard();
 
             // Run once
-            // BUG: https://github.com/cady-io/hangfire-ravendb/issues/14
-            //BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
+            BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
 
             BackgroundJob.Enqueue(() => Test());
 

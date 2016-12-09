@@ -29,9 +29,7 @@ namespace Hangfire.Raven.Examples.Console
                 var client = new BackgroundJobServer();
 
                 // Run once
-
-                // BUG: https://github.com/cady-io/hangfire-ravendb/issues/14
-                //BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
+                BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
 
                 BackgroundJob.Enqueue(() => Test());
 

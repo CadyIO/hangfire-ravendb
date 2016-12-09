@@ -4174,7 +4174,7 @@
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
       },
-      "Hangfire.Raven/2.1.0": {
+      "Hangfire.Raven/2.1.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.0",
         "dependencies": {
@@ -10838,7 +10838,7 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "Hangfire.Raven/2.1.0": {
+    "Hangfire.Raven/2.1.1": {
       "type": "project",
       "path": "../../src/Hangfire.Raven/project.json",
       "msbuildProject": "../../src/Hangfire.Raven/Hangfire.Raven.xproj"
@@ -10847,7 +10847,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Hangfire.AspNetCore >= 1.6.7",
-      "Hangfire.Raven >= 2.1.0",
+      "Hangfire.Raven >= 2.1.1",
       "Microsoft.AspNetCore.Diagnostics >= 1.0.0",
       "Microsoft.AspNetCore.Mvc >= 1.0.1",
       "Microsoft.AspNetCore.Razor.Tools >= 1.0.0-preview2-final",

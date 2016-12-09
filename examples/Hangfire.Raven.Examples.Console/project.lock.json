@@ -61,7 +61,7 @@
           "lib/net45/System.ComponentModel.Primitives.dll": {}
         }
       },
-      "Hangfire.Raven/2.1.0": {
+      "Hangfire.Raven/2.1.1": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
@@ -140,7 +140,7 @@
           "lib/net45/System.ComponentModel.Primitives.dll": {}
         }
       },
-      "Hangfire.Raven/2.1.0": {
+      "Hangfire.Raven/2.1.1": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
@@ -268,7 +268,7 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "Hangfire.Raven/2.1.0": {
+    "Hangfire.Raven/2.1.1": {
       "type": "project",
       "path": "../../src/Hangfire.Raven/project.json",
       "msbuildProject": "../../src/Hangfire.Raven/Hangfire.Raven.xproj"
@@ -276,7 +276,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Hangfire.Raven >= 2.1.0",
+      "Hangfire.Raven >= 2.1.1",
       "System.ComponentModel.Primitives >= 4.3.0"
     ],
     ".NETFramework,Version=v4.5.2": []

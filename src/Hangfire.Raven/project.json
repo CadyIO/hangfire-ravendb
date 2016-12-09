@@ -1,6 +1,6 @@
 {
     "title": "Hangfire.Raven",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "RavenDB job storage for Hangfire",
     "copyright": "Copyright @ 2016 Cady, LLC",
     "authors": [
