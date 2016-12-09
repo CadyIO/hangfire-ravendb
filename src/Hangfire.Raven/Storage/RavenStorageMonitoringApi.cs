@@ -285,7 +285,7 @@ namespace Hangfire.Raven.Storage
                 return new JobDetailsDto {
                     CreatedAt = job.CreatedAt,
                     ExpireAt = repository.Advanced.GetExpire(job),
-                    Job = job.Job.GetJob(),
+                    Job = DeserializeJob(job.InvocationData),
                     History = job.History,
                     Properties = job.Parameters
                 };
@@ -399,7 +399,7 @@ namespace Hangfire.Raven.Storage
                          let stateData = job.StateData.Data != null
                              ? new Dictionary<string, string>(job.StateData.Data, StringComparer.OrdinalIgnoreCase)
                              : null
-                         let dto = selector(job, job.Job.GetJob(), stateData)
+                         let dto = selector(job, DeserializeJob(job.InvocationData), stateData)
                          select new KeyValuePair<string, TDto>(job.Id.Split(new char[] { '/' }, 2)[1], dto);
 
             return new JobList<TDto>(result);

@@ -7,7 +7,6 @@ using Raven.Abstractions.Data;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Indexes;
-using Raven.Imports.Newtonsoft.Json;
 
 namespace Hangfire.Raven
 {
@@ -56,25 +55,13 @@ namespace Hangfire.Raven
 
             if (!string.IsNullOrEmpty(_config.ConnectionStringName)) {
                 _documentStore = new DocumentStore {
-                    ConnectionStringName = _config.ConnectionStringName,
-                    Conventions = new DocumentConvention() {
-                        CustomizeJsonSerializer = delegate (JsonSerializer input) {
-                            input.Converters.Add(new RavenJsonPropertyConverter());
-                            input.Converters.Add(new RavenJsonMethodConverter());
-                        }
-                    }
+                    ConnectionStringName = _config.ConnectionStringName
                 };
             } else {
                 _documentStore = new DocumentStore {
                     Url = _config.ConnectionUrl,
                     ApiKey = _config.ApiKey,
-                    DefaultDatabase = _config.Database,
-                    Conventions = new DocumentConvention() {
-                        CustomizeJsonSerializer = delegate (JsonSerializer input) {
-                            input.Converters.Add(new RavenJsonPropertyConverter());
-                            input.Converters.Add(new RavenJsonMethodConverter());
-                        }
-                    }
+                    DefaultDatabase = _config.Database
                 };
             }
 
