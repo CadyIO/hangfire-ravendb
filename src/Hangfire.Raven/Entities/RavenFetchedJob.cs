@@ -49,7 +49,7 @@ namespace Hangfire.Raven.Entities
             using (var repository = _storage.Repository.OpenSession()) {
                 var job = repository.Load<JobQueue>(Id);
 
-                job.Fetched = false;
+                job.FetchedAt = null;
 
                 repository.Store(job);
                 repository.SaveChanges();

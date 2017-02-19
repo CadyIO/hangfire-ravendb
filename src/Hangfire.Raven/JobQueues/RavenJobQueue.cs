@@ -58,7 +58,7 @@ namespace Hangfire.Raven.JobQueues
                                 KeyStartsWith = $"{Repository.GetId(typeof(JobQueue), queue)}/",
                                 PropertiesMatch = new Dictionary<Expression<Func<JobQueue, object>>, RavenJToken>()
                                 {
-                                    { x => x.Fetched, RavenJToken.FromObject(false) }
+                                    { x => x.FetchedAt, RavenJToken.FromObject(null) }
                                 }
                             });
                     }
@@ -119,9 +119,9 @@ namespace Hangfire.Raven.JobQueues
                     fetchedJob = session.Load<JobQueue>(fetchedJob.Id);
 
                     if (fetchedJob != null &&
-                        !fetchedJob.Fetched)
+                        fetchedJob.FetchedAt == null)
                     {
-                        fetchedJob.Fetched = true;
+                        fetchedJob.FetchedAt = DateTime.Now;
 
                         try
                         {

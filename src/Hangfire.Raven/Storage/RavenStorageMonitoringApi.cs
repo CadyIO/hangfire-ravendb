@@ -29,14 +29,14 @@ namespace Hangfire.Raven.Storage
         public long EnqueuedCount(string queue)
         {
             using (var repository = _storage.Repository.OpenSession()) {
-                var facets = _storage.GetJobQueueFacets(repository, a => !a.Fetched && a.Queue == queue);
+                var facets = _storage.GetJobQueueFacets(repository, a => a.FetchedAt == null && a.Queue == queue);
                 return facets.Results["Queue"].Values.Sum(a => a.Hits);
             }
         }
         public long FetchedCount(string queue)
         {
             using (var repository = _storage.Repository.OpenSession()) {
-                var facets = _storage.GetJobQueueFacets(repository, a => a.Fetched && a.Queue == queue);
+                var facets = _storage.GetJobQueueFacets(repository, a => a.FetchedAt != null && a.Queue == queue);
                 return facets.Results["Queue"].Values.Sum(a => a.Hits);
             }
         }
@@ -183,7 +183,7 @@ namespace Hangfire.Raven.Storage
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var results = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => !a.Fetched && a.Queue == queue)
+                    .Where(a => a.FetchedAt == null && a.Queue == queue)
                     .Skip(from)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -209,7 +209,7 @@ namespace Hangfire.Raven.Storage
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var results = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.Fetched && a.Queue == queue)
+                    .Where(a => a.FetchedAt != null && a.Queue == queue)
                     .Skip(from)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -284,7 +284,7 @@ namespace Hangfire.Raven.Storage
                 var results = from item in query
                               group item by item.Queue into g
                               let total = g.Count()
-                              let fetched = g.Count(a => a.Fetched)
+                              let fetched = g.Count(a => a.FetchedAt != null)
                               select new QueueWithTopEnqueuedJobsDto() {
                                   Name = g.Key,
                                   Length = total - fetched,
