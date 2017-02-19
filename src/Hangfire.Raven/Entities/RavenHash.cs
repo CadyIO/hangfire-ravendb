@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Hangfire.Raven.Entities
 {
-    public class RavenHash 
+    public class RavenHash
     {
         public RavenHash()
         {

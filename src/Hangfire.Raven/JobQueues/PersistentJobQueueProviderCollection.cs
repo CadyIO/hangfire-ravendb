@@ -7,7 +7,7 @@ namespace Hangfire.Raven.JobQueues
     public class PersistentJobQueueProviderCollection : IEnumerable<IPersistentJobQueueProvider>
     {
         private readonly List<IPersistentJobQueueProvider> _providers
-            = new List<IPersistentJobQueueProvider>(); 
+            = new List<IPersistentJobQueueProvider>();
         private readonly Dictionary<string, IPersistentJobQueueProvider> _providersByQueue
             = new Dictionary<string, IPersistentJobQueueProvider>(StringComparer.OrdinalIgnoreCase);
 
@@ -29,15 +29,14 @@ namespace Hangfire.Raven.JobQueues
 
             _providers.Add(provider);
 
-            foreach (var queue in queues)
-            {
+            foreach (var queue in queues) {
                 _providersByQueue.Add(queue, provider);
             }
         }
 
         public IPersistentJobQueueProvider GetProvider(string queue)
         {
-            return _providersByQueue.ContainsKey(queue) 
+            return _providersByQueue.ContainsKey(queue)
                 ? _providersByQueue[queue]
                 : _defaultProvider;
         }

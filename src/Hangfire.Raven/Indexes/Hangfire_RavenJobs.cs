@@ -1,10 +1,7 @@
-﻿using Hangfire.Raven.Entities;
-using Raven.Client.Indexes;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Hangfire.Raven.Entities;
+using Raven.Client.Indexes;
 
 namespace Hangfire.Raven.Indexes
 {
@@ -21,11 +18,10 @@ namespace Hangfire.Raven.Indexes
         public Hangfire_RavenJobs()
         {
             Map = results => from result in results
-                               select new Mapping
-                               {
-                                   StateName = result.StateData.Name,
-                                   CreatedAt = result.CreatedAt
-                               };
+                             select new Mapping {
+                                 StateName = result.StateData.Name,
+                                 CreatedAt = result.CreatedAt
+                             };
             this.Analyze("StateName", "WhitespaceAnalyzer");
         }
     }

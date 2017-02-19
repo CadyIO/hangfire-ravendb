@@ -1,10 +1,10 @@
-﻿using Raven.Abstractions.Data;
+﻿using System.Linq;
+using Raven.Abstractions.Data;
 using Raven.Client.Listeners;
-using System.Linq;
 
 namespace Hangfire.Raven.Listeners
 {
-    public class TakeNewestConflictResolutionListener 
+    public class TakeNewestConflictResolutionListener
         : IDocumentConflictListener
     {
         public bool TryResolveConflict(string key, JsonDocument[] conflictedDocs, out JsonDocument resolvedDocument)

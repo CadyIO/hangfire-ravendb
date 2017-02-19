@@ -1,0 +1,58 @@
+﻿{
+    "title": "Hangfire.Raven.Examples.Console",
+    "version": "2.1.0",
+    "description": "RavenDB job storage for Hangfire - Console Example",
+    "copyright": "Copyright @ 2016 Cady, LLC",
+    "authors": [
+        "Cady <contact@cady.io>"
+    ],
+    "buildOptions": {
+        "allowUnsafe": true,
+        "debugType": "portable",
+        "emitEntryPoint": true,
+        "preserveCompilationContext": true
+    },
+    "packOptions": {
+        "tags": [
+            "Hangfire",
+            "AspNet",
+            "MVC",
+            "OWIN",
+            "RavenDB",
+            "Long-Running",
+            "Background",
+            "Fire-And-Forget",
+            "Delayed",
+            "Recurring",
+            "Tasks",
+            "Jobs",
+            "Scheduler",
+            "Threading",
+            "Queues"
+        ],
+        "include": [
+            "app.config"
+        ],
+        "iconUrl": "https://avatars2.githubusercontent.com/u/7880472?v=3&s=200",
+        "projectUrl": "https://github.com/cady-io/hangfire-ravendb",
+        "licenseUrl": "http://www.gnu.org/licenses/lgpl-3.0.html",
+        "owners": [
+            "Cady <contact@cady.io>"
+        ],
+        "repository": {
+            "type": "git",
+            "url": "https://github.com/cady-io/hangfire-ravendb"
+        },
+        "summary": "RavenDB job storage for Hangfire - Console Example"
+    },
+    "runtimes": {
+        "win10-x64": {}
+    },
+    "frameworks": {
+        "net452": { }
+    },
+    "dependencies": {
+        "Hangfire.Raven": "2.1.1",
+        "System.ComponentModel.Primitives": "4.3.0"
+    }
+}

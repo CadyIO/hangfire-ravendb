@@ -1,18 +1,16 @@
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
-using Hangfire.Storage;
-using Raven.Client.Linq;
-using System.Linq;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
+using Hangfire.Storage;
 using Raven.Abstractions.Data;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 namespace Hangfire.Raven.JobQueues
 {
-    public class RavenJobQueue 
+    public class RavenJobQueue
         : IPersistentJobQueue
     {
         private readonly RavenStorage _storage;
@@ -28,8 +26,7 @@ namespace Hangfire.Raven.JobQueues
             _options = options;
             _queue = new Dictionary<string, BlockingCollection<string>>();
 
-            using (var session = _storage.Repository.OpenSession())
-            {
+            using (var session = _storage.Repository.OpenSession()) {
                 // -- Queue listening
                 if (options.QueueNames == null)
                 {
@@ -116,33 +113,25 @@ namespace Hangfire.Raven.JobQueues
             }
 
             JobQueue fetchedJob = null;
-            do
-            {
+            do {
 
                 var jobId = _queue[queues[0]].Take(cancellationToken);
 
-                using (var repository = _storage.Repository.OpenSession())
-                {
+                using (var repository = _storage.Repository.OpenSession()) {
                     fetchedJob = repository.Load<JobQueue>(jobId);
-                    if (fetchedJob != null && 
+                    if (fetchedJob != null &&
                         fetchedJob.FetchedAt == null)
-                    {
                         fetchedJob.FetchedAt = DateTime.UtcNow;
                         repository.Store(fetchedJob);
 
-                        try
-                        {
+                        try {
                             // Did someone else already picked it up?
                             repository.Advanced.UseOptimisticConcurrency = true;
                             repository.SaveChanges();
-                        }
-                        catch
-                        {
+                        } catch {
                             fetchedJob = null;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         fetchedJob = null;
                     }
                 }
@@ -154,10 +143,8 @@ namespace Hangfire.Raven.JobQueues
 
         public void Enqueue(string queue, string jobId)
         {
-            using (var repository = _storage.Repository.OpenSession())
-            {
-                var jobQueue = new JobQueue
-                {
+            using (var repository = _storage.Repository.OpenSession()) {
+                var jobQueue = new JobQueue {
                     Id = Repository.GetId(typeof(JobQueue), queue, jobId),
                     JobId = jobId,
                     Queue = queue

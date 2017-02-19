@@ -1,7 +1,4 @@
 ﻿using System;
-using Hangfire;
-using Hangfire.Raven.Storage;
-using Hangfire.Raven;
 using Raven.Client;
 using Raven.Json.Linq;
 
@@ -20,8 +17,7 @@ namespace Hangfire.Raven.Storage
         public static DateTime? GetExpire<T>(this ISyncAdvancedSessionOperation advanced, T obj)
         {
             RavenJToken token;
-            if (advanced.GetMetadataFor(obj).TryGetValue("Raven-Expiration-Date", out token))
-            {
+            if (advanced.GetMetadataFor(obj).TryGetValue("Raven-Expiration-Date", out token)) {
                 var date = token.Value<DateTime>();
                 return date;
             }
@@ -40,9 +36,8 @@ namespace Hangfire.Raven.Storage
             configuration.ThrowIfNull("configuration");
             connectionString.ThrowIfNull("connectionString");
 
-            var config = new RepositoryConfig()
-            {
-                ConnectionString = connectionString
+            var config = new RepositoryConfig() {
+                ConnectionStringName = connectionString
             };
             var storage = new RavenStorage(config);
 
@@ -59,8 +54,7 @@ namespace Hangfire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            var config = new RepositoryConfig()
-            {
+            var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database
             };
@@ -79,11 +73,10 @@ namespace Hangfire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            var config = new RepositoryConfig()
-            {
+            var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database,
-                APIKey = APIKey
+                ApiKey = APIKey
             };
 
             var storage = new RavenStorage(config);
@@ -102,8 +95,7 @@ namespace Hangfire.Raven.Storage
                 throw new ArgumentException("Connection Url must begin with http or https!");
             }
 
-            var config = new RepositoryConfig()
-            {
+            var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database
             };

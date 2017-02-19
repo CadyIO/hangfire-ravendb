@@ -1,10 +1,9 @@
-﻿using System;
-using Hangfire.Annotations;
+﻿using Hangfire.Annotations;
 using Hangfire.Raven.Storage;
 
 namespace Hangfire.Raven.JobQueues
 {
-    public class RavenJobQueueProvider 
+    public class RavenJobQueueProvider
         : IPersistentJobQueueProvider
     {
         private readonly IPersistentJobQueue _jobQueue;
