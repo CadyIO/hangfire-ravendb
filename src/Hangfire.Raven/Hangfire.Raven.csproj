@@ -73,7 +73,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assemblies.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLock.cs" />
     <Compile Include="DistributedLocks\RavenDistributedLockException.cs" />
     <Compile Include="Entities\AggregatedCounter.cs" />
@@ -81,6 +80,7 @@
     <Compile Include="Entities\DistributedLocks.cs" />
     <Compile Include="Entities\EnqueuedAndFetchedCount.cs" />
     <Compile Include="Entities\JobQueue.cs" />
+    <Compile Include="Entities\RavenJobQueueConfig.cs" />
     <Compile Include="Entities\RavenHash.cs" />
     <Compile Include="Entities\RavenList.cs" />
     <Compile Include="Entities\RavenSet.cs" />
@@ -100,7 +100,6 @@
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JobQueues\RavenJobQueueProvider.cs" />
-    <Compile Include="RavenJsonConverters.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="JobQueues\RavenJobQueueMonitoringApi.cs" />
     <Compile Include="Storage\RavenStorageMonitoringApi.cs" />
@@ -118,8 +117,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Hangfire.Raven.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

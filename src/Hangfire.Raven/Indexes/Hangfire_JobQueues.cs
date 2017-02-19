@@ -13,7 +13,7 @@ namespace Hangfire.Raven.Indexes
     {
         public class Mapping
         {
-            public DateTime? FetchedAt { get; set; }
+            public bool Fetched { get; set; }
             public string Queue { get; set; }
         }
 
@@ -23,7 +23,7 @@ namespace Hangfire.Raven.Indexes
                                select new Mapping
                                {
                                    Queue = result.Queue,
-                                   FetchedAt = result.FetchedAt
+                                   Fetched = result.Fetched
                                };
             this.Analyze("Queue", "WhitespaceAnalyzer");
         }

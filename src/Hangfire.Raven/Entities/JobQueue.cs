@@ -7,6 +7,6 @@ namespace Hangfire.Raven.Entities
         public string Id { get; set; }
         public string JobId { get; set; }
         public string Queue { get; set; }
-        public DateTime? FetchedAt { get; set; }
+        public bool Fetched { get; set; }
     }
 }

@@ -29,14 +29,14 @@ namespace Hangfire.Raven.Storage
         public long EnqueuedCount(string queue)
         {
             using (var repository = _storage.Repository.OpenSession()) {
-                var facets = _storage.GetJobQueueFacets(repository, a => a.FetchedAt == null && a.Queue == queue);
+                var facets = _storage.GetJobQueueFacets(repository, a => !a.Fetched && a.Queue == queue);
                 return facets.Results["Queue"].Values.Sum(a => a.Hits);
             }
         }
         public long FetchedCount(string queue)
         {
             using (var repository = _storage.Repository.OpenSession()) {
-                var facets = _storage.GetJobQueueFacets(repository, a => a.FetchedAt != null && a.Queue == queue);
+                var facets = _storage.GetJobQueueFacets(repository, a => a.Fetched && a.Queue == queue);
                 return facets.Results["Queue"].Values.Sum(a => a.Hits);
             }
         }
@@ -62,7 +62,8 @@ namespace Hangfire.Raven.Storage
         }
         private long GetNumberOfJobsByStateName(string stateName)
         {
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var repository = _storage.Repository.OpenSession())
+            {
                 var facetResults = _storage.GetRavenJobFacets(repository, a => a.StateName == stateName);
                 var getFacetValues = facetResults.Results["StateName"].Values;
 
@@ -91,7 +92,8 @@ namespace Hangfire.Raven.Storage
             var endDate = DateTime.UtcNow;
             var dates = new List<DateTime>();
 
-            for (var i = 0; i < 24; i++) {
+            for (var i = 0; i < 24; i++)
+            {
                 dates.Add(endDate);
                 endDate = endDate.AddHours(-1);
             }
@@ -103,7 +105,8 @@ namespace Hangfire.Raven.Storage
             var endDate = DateTime.UtcNow.Date;
             var dates = new List<DateTime>();
 
-            for (var i = 0; i < 7; i++) {
+            for (var i = 0; i < 7; i++)
+            {
                 dates.Add(endDate);
                 endDate = endDate.AddDays(-1);
             }
@@ -114,8 +117,10 @@ namespace Hangfire.Raven.Storage
             Func<DateTime, string> formatorAction)
         {
             var stats = new Dictionary<DateTime, long>();
-            using (var repository = _storage.Repository.OpenSession()) {
-                foreach (var item in dates) {
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                foreach (var item in dates)
+                {
                     var id = Repository.GetId(typeof(Counter), formatorAction(item));
                     var counters = repository.Load<Counter>(id);
 
@@ -178,7 +183,7 @@ namespace Hangfire.Raven.Storage
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var results = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.FetchedAt == null && a.Queue == queue)
+                    .Where(a => !a.Fetched && a.Queue == queue)
                     .Skip(from)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -204,7 +209,7 @@ namespace Hangfire.Raven.Storage
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var results = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.FetchedAt != null && a.Queue == queue)
+                    .Where(a => a.Fetched && a.Queue == queue)
                     .Skip(from)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -217,7 +222,8 @@ namespace Hangfire.Raven.Storage
         {
             return GetJobs(from, count,
                 ScheduledState.StateName,
-                (jsonJob, job, stateData) => new ScheduledJobDto {
+                (jsonJob, job, stateData) => new ScheduledJobDto
+                {
                     Job = job,
                     EnqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]),
                     ScheduledAt = JobHelper.DeserializeDateTime(stateData["ScheduledAt"])
@@ -278,7 +284,7 @@ namespace Hangfire.Raven.Storage
                 var results = from item in query
                               group item by item.Queue into g
                               let total = g.Count()
-                              let fetched = g.Count(a => a.FetchedAt.HasValue)
+                              let fetched = g.Count(a => a.Fetched)
                               select new QueueWithTopEnqueuedJobsDto() {
                                   Name = g.Key,
                                   Length = total - fetched,

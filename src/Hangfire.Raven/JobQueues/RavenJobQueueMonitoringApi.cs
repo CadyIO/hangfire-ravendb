@@ -33,7 +33,7 @@ namespace Hangfire.Raven.JobQueues
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var jobs = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.Queue == queue && a.FetchedAt == null)
+                    .Where(a => a.Queue == queue && !a.Fetched)
                     .Skip(pageFrom)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -58,7 +58,7 @@ namespace Hangfire.Raven.JobQueues
         {
             using (var repository = _storage.Repository.OpenSession()) {
                 var jobs = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.Queue == queue && a.FetchedAt != null)
+                    .Where(a => a.Queue == queue && a.Fetched)
                     .Skip(pageFrom)
                     .Take(perPage)
                     .OfType<JobQueue>()
@@ -80,10 +80,10 @@ namespace Hangfire.Raven.JobQueues
         public EnqueuedAndFetchedCount GetEnqueuedAndFetchedCount(string queue)
         {
             using (var repository = _storage.Repository.OpenSession()) {
-                var fetchedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt != null && a.Queue == queue);
+                var fetchedQuery = _storage.GetJobQueueFacets(repository, a => a.Fetched && a.Queue == queue);
                 var fetchedCount = fetchedQuery.Results["Queue"].Values.Sum(a => a.Hits);
 
-                var enqueuedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt == null && a.Queue == queue);
+                var enqueuedQuery = _storage.GetJobQueueFacets(repository, a => !a.Fetched && a.Queue == queue);
                 var enqueuedCount = enqueuedQuery.Results["Queue"].Values.Sum(a => a.Hits);
                 
                 return new EnqueuedAndFetchedCount {

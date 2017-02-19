@@ -8,6 +8,7 @@ using Raven.Abstractions.Data;
 using System.Linq.Expressions;
 using Raven.Client;
 using Raven.Client.Linq;
+using System;
 
 namespace Hangfire.Raven.Storage
 {
