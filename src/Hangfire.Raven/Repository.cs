@@ -53,12 +53,17 @@ namespace Hangfire.Raven
         {
             _config = config;
 
-            if (!string.IsNullOrEmpty(_config.ConnectionStringName)) {
-                _documentStore = new DocumentStore {
+            if (!string.IsNullOrEmpty(_config.ConnectionStringName))
+            {
+                _documentStore = new DocumentStore
+                {
                     ConnectionStringName = _config.ConnectionStringName
                 };
-            } else {
-                _documentStore = new DocumentStore {
+            }
+            else
+            {
+                _documentStore = new DocumentStore
+                {
                     Url = _config.ConnectionUrl,
                     ApiKey = _config.ApiKey,
                     DefaultDatabase = _config.Database
@@ -67,8 +72,6 @@ namespace Hangfire.Raven
 
             _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
             _documentStore.Initialize();
-
-            new Hangfire_RavenJobs().Execute(_documentStore);
         }
 
         public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
@@ -88,7 +91,8 @@ namespace Hangfire.Raven
 
         public void Destroy()
         {
-            if (!_documentStore.DatabaseExists(_config.Database)) {
+            if (!_documentStore.DatabaseExists(_config.Database))
+            {
                 return;
             }
 
@@ -97,22 +101,32 @@ namespace Hangfire.Raven
 
         public void Create()
         {
-            if (_documentStore.DatabaseExists(_config.Database)) {
+            if (_documentStore.DatabaseExists(_config.Database))
+            {
                 return;
             }
 
             _documentStore.DatabaseCommands.GlobalAdmin.EnsureDatabaseExists(_config.Database);
         }
 
+        public IReliableSubscriptions Subscriptions()
+        {
+            return _documentStore.Subscriptions;
+        }
+
         public IDisposable DocumentChange(Type documentType, Action<DocumentChangeNotification> action)
         {
-            return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(GetId(documentType, ""))
+            return _documentStore
+                .Changes(_config.Database)
+                .ForDocumentsStartingWith(GetId(documentType, ""))
                 .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
         }
 
         public IDisposable DocumentChange(Type documentType, string suffix, Action<DocumentChangeNotification> action)
         {
-            return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(
+            return _documentStore
+                .Changes(_config.Database)
+                .ForDocumentsStartingWith(
                     GetId(documentType, string.Format("{0}/", suffix))
                 )
                 .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));

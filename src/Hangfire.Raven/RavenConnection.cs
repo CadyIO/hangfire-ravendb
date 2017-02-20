@@ -28,7 +28,8 @@ using static Hangfire.Raven.Entities.RavenJob;
 
 namespace Hangfire.Raven
 {
-    public class RavenConnection : JobStorageConnection
+    public class RavenConnection : 
+        JobStorageConnection
     {
         private readonly RavenStorage _storage;
 
@@ -272,12 +273,15 @@ namespace Hangfire.Raven
                     server = new RavenServer() {
                         Id = id,
                         Data = new RavenServer.ServerData()
+                        {
+                            StartedAt = DateTime.UtcNow
+                        }
+                        
                     };
 
                     repository.Store(server);
                 }
 
-                // Merge Queues and WorkerCount
                 server.Data.WorkerCount += context.WorkerCount;
                 server.Data.Queues = context.Queues.Concat(server.Data.Queues ?? new List<string>()).Distinct();
 
