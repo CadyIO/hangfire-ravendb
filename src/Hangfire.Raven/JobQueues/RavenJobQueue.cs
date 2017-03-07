@@ -1,21 +1,25 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage;
-using Raven.Abstractions.Data;
+using Raven.Abstractions.Exceptions;
+using Raven.Client.Linq;
+using Hangfire.Logging;
+using Hangfire.Raven.Indexes;
+using System.Linq.Expressions;
 
 namespace Hangfire.Raven.JobQueues
 {
-    public class RavenJobQueue
-        : IPersistentJobQueue
+    public class RavenJobQueue : IPersistentJobQueue
     {
+        private static readonly ILog Logger = LogProvider.For<RavenJobQueue>();
+
         private readonly RavenStorage _storage;
+
         private readonly RavenStorageOptions _options;
-        private BlockingCollection<string> _queue;
 
         public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options)
         {
@@ -24,31 +28,6 @@ namespace Hangfire.Raven.JobQueues
 
             _storage = storage;
             _options = options;
-            _queue = new BlockingCollection<string>();
-
-            using (var session = _storage.Repository.OpenSession()) {
-                var missed = session.Advanced.LoadStartingWith<JobQueue>(Repository.GetId(typeof(JobQueue), ""));
-                foreach (var miss in missed) {
-                    _queue.Add(miss.Id);
-                }
-            }
-
-            // -- Queue listening
-            if (options.QueueNames == null) {
-                Console.WriteLine("Starting on ALL Queue's, this is not recommended, please specify using RavenStorageOptions. Use an empty IEnumerable (such as List<string> or string[0]) to not listen to any queue.");
-                _storage.Repository.DocumentChange(typeof(JobQueue), QueueFiller);
-            } else {
-                foreach (var queue in options.QueueNames) {
-                    Console.WriteLine("Starting on queue: {0}", queue);
-                    _storage.Repository.DocumentChange(typeof(JobQueue), queue, QueueFiller);
-                }
-            }
-        }
-
-        private void QueueFiller(DocumentChangeNotification notification)
-        {
-            if (notification.Type == DocumentChangeTypes.Put)
-                _queue.Add(notification.Id);
         }
 
         [NotNull]
@@ -56,33 +35,68 @@ namespace Hangfire.Raven.JobQueues
         {
             queues.ThrowIfNull("queues");
 
-            if (queues.Length == 0) {
+            if (queues.Length == 0)
+            {
                 throw new ArgumentException("Queue array must be non-empty.", "queues");
             }
 
             JobQueue fetchedJob = null;
-            do {
-                var jobId = _queue.Take(cancellationToken);
 
-                using (var repository = _storage.Repository.OpenSession()) {
-                    fetchedJob = repository.Load<JobQueue>(jobId);
-                    if (fetchedJob != null &&
-                        fetchedJob.FetchedAt == null &&
-                        queues.Contains(fetchedJob.Queue)) {
-                        fetchedJob.FetchedAt = DateTime.UtcNow;
-                        repository.Store(fetchedJob);
+            var fetchConditions = new Expression<Func<Hangfire_JobQueues.Mapping, bool>>[]
+            {
+                job => job.FetchedAt == null,
+                job => job.FetchedAt < DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds)
+            };
+            var currentQueryIndex = 0;
 
-                        try {
-                            // Did someone else already picked it up?
-                            repository.Advanced.UseOptimisticConcurrency = true;
-                            repository.SaveChanges();
-                        } catch {
-                            fetchedJob = null;
+            do
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var fetchCondition = fetchConditions[currentQueryIndex];
+
+                foreach (var queue in queues)
+                {
+                    using (var repository = _storage.Repository.OpenSession())
+                    {
+                        foreach (var job in repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
+                            .Where(fetchCondition)
+                            .Where(job => job.Queue == queue)
+                            .OfType<JobQueue>())
+                        {
+                            job.FetchedAt = DateTime.UtcNow;
+
+                            try
+                            {
+                                // Did someone else already picked it up?
+                                repository.Advanced.UseOptimisticConcurrency = true;
+                                repository.SaveChanges();
+
+                                fetchedJob = job;
+                                break;
+                            }
+                            catch (ConcurrencyException)
+                            {
+                                repository.Advanced.Evict(job); // Avoid subsequent concurrency exceptions
+                            }
                         }
-                    } else {
-                        fetchedJob = null;
+                    }
+                    if (fetchedJob != null)
+                    {
+                        break;
                     }
                 }
+
+                if (fetchedJob == null)
+                {
+                    if (currentQueryIndex == fetchConditions.Length - 1)
+                    {
+                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                }
+
+                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
             }
             while (fetchedJob == null);
 
@@ -91,9 +105,11 @@ namespace Hangfire.Raven.JobQueues
 
         public void Enqueue(string queue, string jobId)
         {
-            using (var repository = _storage.Repository.OpenSession()) {
-                var jobQueue = new JobQueue {
-                    Id = Repository.GetId(typeof(JobQueue), queue, jobId),
+            using (var repository = _storage.Repository.OpenSession())
+            {
+                var jobQueue = new JobQueue
+                {
+                    Id = _storage.Repository.GetId(typeof(JobQueue), queue, jobId),
                     JobId = jobId,
                     Queue = queue
                 };

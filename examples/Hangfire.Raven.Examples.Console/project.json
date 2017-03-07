@@ -52,7 +52,7 @@
         "net452": { }
     },
     "dependencies": {
-        "Hangfire.Raven": "2.1.1",
+        "Hangfire.Raven": { "target": "project" },
         "System.ComponentModel.Primitives": "4.3.0"
     }
 }

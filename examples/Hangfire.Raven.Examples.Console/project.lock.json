@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.2": {
-      "Hangfire.Core/1.6.4": {
+      "Hangfire.Core/1.6.8": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "5.0.0",
@@ -14,6 +14,14 @@
         },
         "runtime": {
           "lib/net45/Hangfire.Core.dll": {}
+        },
+        "resource": {
+          "lib/net45/es/Hangfire.Core.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net45/zh/Hangfire.Core.resources.dll": {
+            "locale": "zh"
+          }
         }
       },
       "Newtonsoft.Json/9.0.1": {
@@ -34,7 +42,7 @@
           "lib/net40/Owin.dll": {}
         }
       },
-      "RavenDB.Client/3.5.0-rc-35169": {
+      "RavenDB.Client/3.5.3-patch-35190": {
         "type": "package",
         "frameworkAssemblies": [
           "System.ComponentModel.Composition"
@@ -65,9 +73,9 @@
         "type": "project",
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
-          "Hangfire.Core": "1.6.4",
+          "Hangfire.Core": "1.6.8",
           "Newtonsoft.Json": "9.0.1",
-          "RavenDB.Client": "3.5.0-rc-35169"
+          "RavenDB.Client": "3.5.3-patch-35190"
         },
         "frameworkAssemblies": [
           "System.Data",
@@ -82,7 +90,7 @@
       }
     },
     ".NETFramework,Version=v4.5.2/win10-x64": {
-      "Hangfire.Core/1.6.4": {
+      "Hangfire.Core/1.6.8": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "5.0.0",
@@ -93,6 +101,14 @@
         },
         "runtime": {
           "lib/net45/Hangfire.Core.dll": {}
+        },
+        "resource": {
+          "lib/net45/es/Hangfire.Core.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net45/zh/Hangfire.Core.resources.dll": {
+            "locale": "zh"
+          }
         }
       },
       "Newtonsoft.Json/9.0.1": {
@@ -113,7 +129,7 @@
           "lib/net40/Owin.dll": {}
         }
       },
-      "RavenDB.Client/3.5.0-rc-35169": {
+      "RavenDB.Client/3.5.3-patch-35190": {
         "type": "package",
         "frameworkAssemblies": [
           "System.ComponentModel.Composition"
@@ -144,9 +160,9 @@
         "type": "project",
         "framework": ".NETFramework,Version=v4.5",
         "dependencies": {
-          "Hangfire.Core": "1.6.4",
+          "Hangfire.Core": "1.6.8",
           "Newtonsoft.Json": "9.0.1",
-          "RavenDB.Client": "3.5.0-rc-35169"
+          "RavenDB.Client": "3.5.3-patch-35190"
         },
         "frameworkAssemblies": [
           "System.Data",
@@ -162,17 +178,21 @@
     }
   },
   "libraries": {
-    "Hangfire.Core/1.6.4": {
-      "sha512": "QM+WNZ/B7t3BzOBumLb2NU9aoh76hb/Jdt9pV95+HSHZbPsvms7Jk9kUC9PLopdh9gpUL7L6dmnhEnpQJBBs+Q==",
+    "Hangfire.Core/1.6.8": {
+      "sha512": "c9au0lu14wOX7Zpm1dhjVIzXrlzotEe2mJHoM1n0E/erZrTUtIlruhDThkTO6QIRO1e6vklhXRhzYfQ4mnExHg==",
       "type": "package",
-      "path": "Hangfire.Core/1.6.4",
+      "path": "Hangfire.Core/1.6.8",
       "files": [
-        "Hangfire.Core.1.6.4.nupkg.sha512",
+        "Hangfire.Core.1.6.8.nupkg.sha512",
         "Hangfire.Core.nuspec",
         "lib/net45/Hangfire.Core.dll",
         "lib/net45/Hangfire.Core.xml",
+        "lib/net45/es/Hangfire.Core.resources.dll",
+        "lib/net45/zh/Hangfire.Core.resources.dll",
         "lib/netstandard1.3/Hangfire.Core.dll",
-        "lib/netstandard1.3/Hangfire.Core.xml"
+        "lib/netstandard1.3/Hangfire.Core.xml",
+        "lib/netstandard1.3/es/Hangfire.Core.resources.dll",
+        "lib/netstandard1.3/zh/Hangfire.Core.resources.dll"
       ]
     },
     "Newtonsoft.Json/9.0.1": {
@@ -209,12 +229,12 @@
         "lib/net40/Owin.dll"
       ]
     },
-    "RavenDB.Client/3.5.0-rc-35169": {
-      "sha512": "xP23wh0U4h8/MmuiFEYhCB+y9AA87DvsJOifmfynPrYYV9jOjFLLWa55iOmy/RNWakDso7td0m3AcfGygULXQw==",
+    "RavenDB.Client/3.5.3-patch-35190": {
+      "sha512": "AeX482QeGFtvQ6kKzEY2uVhW2F+tea/6J7aN8VlevL+UK4sLAOOvk45ciacXFzqhe5PcE2NazWjNgT6GrDd1VQ==",
       "type": "package",
-      "path": "RavenDB.Client/3.5.0-rc-35169",
+      "path": "RavenDB.Client/3.5.3-patch-35190",
       "files": [
-        "RavenDB.Client.3.5.0-rc-35169.nupkg.sha512",
+        "RavenDB.Client.3.5.3-patch-35190.nupkg.sha512",
         "RavenDB.Client.nuspec",
         "lib/net45/Raven.Abstractions.dll",
         "lib/net45/Raven.Abstractions.pdb",
@@ -222,13 +242,13 @@
         "lib/net45/Raven.Client.Lightweight.XML",
         "lib/net45/Raven.Client.Lightweight.dll",
         "lib/net45/Raven.Client.Lightweight.pdb",
-        "lib/netstandard1.6/Raven.Abstractions.dll",
-        "lib/netstandard1.6/Raven.Abstractions.pdb",
-        "lib/netstandard1.6/Raven.Client.Lightweight.deps.json",
-        "lib/netstandard1.6/Raven.Client.Lightweight.dll",
-        "lib/netstandard1.6/Raven.Client.Lightweight.pdb",
-        "lib/netstandard1.6/Sparrow.dll",
-        "lib/netstandard1.6/Sparrow.pdb"
+        "lib/netstandard1.3/Raven.Abstractions.dll",
+        "lib/netstandard1.3/Raven.Abstractions.pdb",
+        "lib/netstandard1.3/Raven.Client.Lightweight.deps.json",
+        "lib/netstandard1.3/Raven.Client.Lightweight.dll",
+        "lib/netstandard1.3/Raven.Client.Lightweight.pdb",
+        "lib/netstandard1.3/Sparrow.dll",
+        "lib/netstandard1.3/Sparrow.pdb"
       ]
     },
     "System.ComponentModel.Primitives/4.3.0": {
@@ -276,7 +296,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Hangfire.Raven >= 2.1.1",
+      "Hangfire.Raven",
       "System.ComponentModel.Primitives >= 4.3.0"
     ],
     ".NETFramework,Version=v4.5.2": []

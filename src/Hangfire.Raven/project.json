@@ -42,9 +42,9 @@
         "summary": "RavenDB job storage for Hangfire"
     },
     "dependencies": {
-        "Hangfire.Core": "1.6.4",
+        "Hangfire.Core": "1.6.8",
         "Newtonsoft.Json": "9.0.1",
-        "RavenDB.Client": "3.5.0-rc-35169"
+        "RavenDB.Client": "3.5.3-patch-35190"
     },
     "frameworks": {
         "net45": {

@@ -9,12 +9,15 @@ using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 using Raven.Abstractions.Data;
 using Raven.Client;
+using Hangfire.Logging;
 
 namespace Hangfire.Raven
 {
-    internal class RavenWriteOnlyTransaction
+    public class RavenWriteOnlyTransaction
         : JobStorageTransaction
     {
+        private static readonly ILog Logger = LogProvider.For<RavenWriteOnlyTransaction>();
+
         private readonly RavenStorage _storage;
         private IDocumentSession _session;
         private List<KeyValuePair<string, PatchRequest>> _patchRequests;
@@ -41,7 +44,7 @@ namespace Hangfire.Raven
                     _session.Advanced.DocumentStore.DatabaseCommands.Patch(item.Key, item.ToArray());
                 }
             } catch {
-                Console.WriteLine("- Concurrency exception");
+                Logger.Error("- Concurrency exception");
 
                 throw;
             }
@@ -49,7 +52,7 @@ namespace Hangfire.Raven
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
-            var id = Repository.GetId(typeof(RavenJob), jobId);
+            var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
             var result = _session.Load<RavenJob>(id);
 
             _session.Advanced.AddExpire(result, DateTime.UtcNow + expireIn);
@@ -57,7 +60,7 @@ namespace Hangfire.Raven
 
         public override void PersistJob(string jobId)
         {
-            var id = Repository.GetId(typeof(RavenJob), jobId);
+            var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
             var result = _session.Load<RavenJob>(id);
 
             _session.Advanced.RemoveExpire(result);
@@ -65,7 +68,7 @@ namespace Hangfire.Raven
 
         public override void SetJobState(string jobId, IState state)
         {
-            var id = Repository.GetId(typeof(RavenJob), jobId);
+            var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
             var result = _session.Load<RavenJob>(id);
 
             result.History.Insert(0, new StateHistoryDto() {
@@ -87,6 +90,24 @@ namespace Hangfire.Raven
             SetJobState(jobId, state);
         }
 
+        public override void AddRangeToSet(string key, IList<string> items)
+        {
+            key.ThrowIfNull("key");
+            items.ThrowIfNull("items");
+
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
+
+            var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
+                Id = id
+            };
+
+            _session.Store(set);
+
+            foreach (var item in items) {
+                set.Scores[item] = 0.0;
+            }
+        }
+
         public override void AddToQueue(string queue, string jobId)
         {
             var provider = _storage.QueueProviders.GetProvider(queue);
@@ -102,7 +123,7 @@ namespace Hangfire.Raven
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
-            var id = Repository.GetId(typeof(Counter), key);
+            var id = _storage.Repository.GetId(typeof(Counter), key);
 
             if (_session.Load<Counter>(id) == null) {
                 var counter = new Counter() {
@@ -131,7 +152,7 @@ namespace Hangfire.Raven
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
-            var id = Repository.GetId(typeof(Counter), key);
+            var id = _storage.Repository.GetId(typeof(Counter), key);
 
             if (_session.Load<Counter>(id) == null) {
                 var counter = new Counter() {
@@ -160,7 +181,7 @@ namespace Hangfire.Raven
 
         public override void AddToSet(string key, string value, double score)
         {
-            var id = Repository.GetId(typeof(RavenSet), key);
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
             var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
                 Id = id
@@ -173,9 +194,13 @@ namespace Hangfire.Raven
 
         public override void RemoveFromSet(string key, string value)
         {
-            var id = Repository.GetId(typeof(RavenSet), key);
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
             var set = _session.Load<RavenSet>(id);
+
+            if (set == null) {
+                return;
+            }
 
             set.Scores.Remove(value);
 
@@ -188,7 +213,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            var id = Repository.GetId(typeof(RavenSet), key);
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
             _session.Delete(id);
         }
@@ -197,7 +222,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            var id = Repository.GetId(typeof(RavenSet), key);
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
             var set = _session.Load<RavenSet>(id);
 
             _session.Advanced.AddExpire(set, DateTime.UtcNow + expireIn);
@@ -207,7 +232,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            var id = Repository.GetId(typeof(RavenSet), key);
+            var id = _storage.Repository.GetId(typeof(RavenSet), key);
             var set = _session.Load<RavenSet>(id);
 
             _session.Advanced.RemoveExpire(set);
@@ -216,56 +241,77 @@ namespace Hangfire.Raven
 
         public override void InsertToList(string key, string value)
         {
-            var list = _session.Query<RavenList>().FirstOrDefault(t => t.Key == key && t.Value == value);
+            var id = _storage.Repository.GetId(typeof(RavenList), key);
 
-            if (list == null) {
-                list = new RavenList {
-                    Id = Guid.NewGuid().ToString(),
-                    Key = key
-                };
-            }
-
-            list.Value = value;
+            var list = _session.Load<RavenList>(id) ?? new RavenList() {
+                Id = id
+            };
 
             _session.Store(list);
+
+            list.Values.Add(value);
         }
 
         public override void RemoveFromList(string key, string value)
         {
-            var list = _session.Query<RavenList>().FirstOrDefault(t => t.Key == key && t.Value == value);
+            var id = _storage.Repository.GetId(typeof(RavenList), key);
+
+            var list = _session.Load<RavenList>(id);
 
             if (list == null) {
                 return;
             }
 
-            _session.Delete(list);
+            list.Values.RemoveAll(v => v == value);
+
+            if (list.Values.Count == 0) {
+                _session.Delete(list);
+            }
         }
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
-            var list = _session.Query<RavenList>().Where(t => t.Key == key).ToList();
+            var id = _storage.Repository.GetId(typeof(RavenList), key);
 
-            if (!list.Any()) {
+            var list = _session.Load<RavenList>(id);
+
+            if (list == null) {
                 return;
             }
 
-            for (var i = 0; i < list.Count; ++i) {
-                if (i >= keepStartingFrom && i <= keepEndingAt) {
-                    continue;
-                }
+            list.Values = list.Values.Skip(keepStartingFrom).Take(keepEndingAt - keepStartingFrom + 1).ToList();
 
-                _session.Delete(list[i]);
+            if (list.Values.Count == 0) {
+                _session.Delete(list);
             }
         }
 
+        public override void ExpireList(string key, TimeSpan expireIn)
+        {
+            key.ThrowIfNull("key");
 
+            var id = _storage.Repository.GetId(typeof(RavenList), key);
+            var list = _session.Load<RavenList>(id);
+
+            _session.Advanced.AddExpire(list, DateTime.UtcNow + expireIn);
+        }
+
+        public override void PersistList(string key)
+        {
+            key.ThrowIfNull("key");
+
+            var id = _storage.Repository.GetId(typeof(RavenList), key);
+            var list = _session.Load<RavenList>(id);
+
+            _session.Advanced.RemoveExpire(list);
+        }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
             key.ThrowIfNull("key");
             keyValuePairs.ThrowIfNull("keyValuePairs");
 
-            var id = Repository.GetId(typeof(RavenHash), key);
+            var id = _storage.Repository.GetId(typeof(RavenHash), key);
             var result = _session.Load<RavenHash>(id);
 
             // Not exists? Insert
@@ -286,14 +332,14 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            _session.Delete(Repository.GetId(typeof(RavenHash), key));
+            _session.Delete(_storage.Repository.GetId(typeof(RavenHash), key));
         }
 
         public override void ExpireHash(string key, TimeSpan expireIn)
         {
             key.ThrowIfNull("key");
 
-            var id = Repository.GetId(typeof(RavenHash), key);
+            var id = _storage.Repository.GetId(typeof(RavenHash), key);
             var set = _session.Load<RavenHash>(id);
 
             _session.Advanced.AddExpire(set, DateTime.UtcNow + expireIn);
@@ -303,7 +349,7 @@ namespace Hangfire.Raven
         {
             key.ThrowIfNull("key");
 
-            var id = Repository.GetId(typeof(RavenHash), key);
+            var id = _storage.Repository.GetId(typeof(RavenHash), key);
             var set = _session.Load<RavenHash>(id);
 
             _session.Advanced.RemoveExpire(set);
