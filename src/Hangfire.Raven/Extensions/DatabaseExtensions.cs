@@ -6,7 +6,7 @@ namespace Hangfire.Raven.Extensions
     {
         public static bool DatabaseExists(this IDocumentStore documentStore, string database)
         {
-            var result = documentStore.DatabaseCommands.Head("Raven/Databases/" + database);
+            var result = documentStore.DatabaseCommands.ForSystemDatabase().Head("Raven/Databases/" + database);
 
             return (result != null);
         }

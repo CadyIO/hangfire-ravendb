@@ -43,8 +43,8 @@
         "summary": "RavenDB job storage for Hangfire - AspNetCore Example"
     },
     "dependencies": {
-        "Hangfire.AspNetCore": "1.6.7",
-        "Hangfire.Raven": "2.1.1",
+        "Hangfire.AspNetCore": "1.6.8",
+        "Hangfire.Raven": { "target": "project" },
         "Microsoft.NETCore.App": {
             "version": "1.0.1",
             "type": "platform"

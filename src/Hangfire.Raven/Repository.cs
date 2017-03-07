@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hangfire.Raven.Extensions;
-using Hangfire.Raven.Indexes;
 using Hangfire.Raven.Listeners;
 using Raven.Abstractions.Data;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Indexes;
+using System.IO;
 
 namespace Hangfire.Raven
 {
@@ -44,31 +44,30 @@ namespace Hangfire.Raven
         }
     }
 
-    public class Repository
+    public class Repository : IRepository
     {
-        private RepositoryConfig _config;
-        private static IDocumentStore _documentStore;
+        private DocumentStore _documentStore;
+
+        private string _database;
 
         public Repository(RepositoryConfig config)
         {
-            _config = config;
-
-            if (!string.IsNullOrEmpty(_config.ConnectionStringName)) {
+            if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
                 _documentStore = new DocumentStore {
-                    ConnectionStringName = _config.ConnectionStringName
+                    ConnectionStringName = config.ConnectionStringName
                 };
             } else {
                 _documentStore = new DocumentStore {
-                    Url = _config.ConnectionUrl,
-                    ApiKey = _config.ApiKey,
-                    DefaultDatabase = _config.Database
+                    Url = config.ConnectionUrl,
+                    ApiKey = config.ApiKey,
+                    DefaultDatabase = config.Database
                 };
             }
 
             _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
-            _documentStore.Initialize();
+            _documentStore.Initialize(ensureDatabaseExists: false);
 
-            new Hangfire_RavenJobs().Execute(_documentStore);
+            _database = _documentStore.DefaultDatabase;
         }
 
         public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
@@ -81,38 +80,48 @@ namespace Hangfire.Raven
             _documentStore.ExecuteIndexes(indexes);
         }
 
-        public static string GetId(Type type, params string[] id)
+        public string GetId(Type type, params string[] id)
         {
             return _documentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(string.Join("/", id), type, false);
         }
 
         public void Destroy()
         {
-            if (!_documentStore.DatabaseExists(_config.Database)) {
+            if (_database == null || !_documentStore.DatabaseExists(_database)) {
                 return;
             }
 
-            _documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_config.Database, hardDelete: true);
+            _documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_database, hardDelete: true);
         }
 
         public void Create()
         {
-            if (_documentStore.DatabaseExists(_config.Database)) {
+            if (_database == null || _documentStore.DatabaseExists(_database)) {
                 return;
             }
 
-            _documentStore.DatabaseCommands.GlobalAdmin.EnsureDatabaseExists(_config.Database);
+            _documentStore
+                .DatabaseCommands
+                .GlobalAdmin
+                .CreateDatabase(new DatabaseDocument {
+                    Id = "Raven/Databases/" + _database,
+                    Settings = {
+                        { "Raven/ActiveBundles", "DocumentExpiration" },
+                        { "Raven/StorageTypeName", "voron" },
+                        { "Raven/DataDir", Path.Combine("~", _database) },
+                    }
+                });
         }
 
         public IDisposable DocumentChange(Type documentType, Action<DocumentChangeNotification> action)
         {
-            return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(GetId(documentType, ""))
+            return _documentStore.Changes(_database).ForDocumentsStartingWith(GetId(documentType, ""))
                 .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
         }
 
         public IDisposable DocumentChange(Type documentType, string suffix, Action<DocumentChangeNotification> action)
         {
-            return _documentStore.Changes(_config.Database).ForDocumentsStartingWith(
+            return _documentStore.Changes(_database).ForDocumentsStartingWith(
                     GetId(documentType, string.Format("{0}/", suffix))
                 )
                 .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
@@ -120,12 +129,17 @@ namespace Hangfire.Raven
 
         public IDocumentSession OpenSession()
         {
-            return _documentStore.OpenSession(_config.Database);
+            return _documentStore.OpenSession(_database);
         }
 
         public IAsyncDocumentSession OpenAsyncSession()
         {
-            return _documentStore.OpenAsyncSession(_config.Database);
+            return _documentStore.OpenAsyncSession(_database);
+        }
+
+        public void Dispose()
+        {
+            _documentStore.Dispose();
         }
     }
 }

@@ -1,16 +1,21 @@
+using System;
 using System.Collections.Generic;
 using Hangfire.Logging;
 using Hangfire.Raven.Indexes;
 using Hangfire.Raven.JobQueues;
 using Hangfire.Storage;
 using Raven.Client.Indexes;
+using Raven.Abstractions.Data;
+using System.Linq.Expressions;
+using Raven.Client;
+using Raven.Client.Linq;
 
 namespace Hangfire.Raven.Storage
 {
     public class RavenStorage : JobStorage
     {
         private readonly RavenStorageOptions _options;
-        private readonly Repository _repository;
+        private readonly IRepository _repository;
 
         public RavenStorage(RepositoryConfig config)
             : this(config, new RavenStorageOptions())
@@ -23,22 +28,36 @@ namespace Hangfire.Raven.Storage
         /// <param name="config"></param>
         /// <param name="options"></param>
         public RavenStorage(RepositoryConfig config, RavenStorageOptions options)
+            : this(new Repository(config), options)
         {
+        }
+
+        public RavenStorage(IRepository repository)
+            : this(repository, new RavenStorageOptions())
+        {
+        }
+
+        public RavenStorage(IRepository repository, RavenStorageOptions options)
+        {
+            repository.ThrowIfNull("repository");
             options.ThrowIfNull("options");
 
             _options = options;
-            _repository = new Repository(config);
+            _repository = repository;
 
+            _repository.Create();
             _repository.ExecuteIndexes(new List<AbstractIndexCreationTask>()
             {
-                new Hangfire_RavenJobs()
+                new Hangfire_RavenJobs(),
+                new Hangfire_JobQueues(),
+                new Hangfire_RavenServers()
             });
 
             InitializeQueueProviders();
         }
 
         public RavenStorageOptions Options { get { return _options; } }
-        public Repository Repository { get { return _repository; } }
+        public IRepository Repository { get { return _repository; } }
 
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
@@ -55,6 +74,38 @@ namespace Hangfire.Raven.Storage
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for Raven job storage:");
+        }
+
+        public FacetResults GetRavenJobFacets(
+                    IDocumentSession session,
+                    Expression<Func<Hangfire_RavenJobs.Mapping, bool>> clause)
+        {
+            var query = session.Query<Hangfire_RavenJobs.Mapping, Hangfire_RavenJobs>();
+            if (clause != null)
+                query = query.Where(clause);
+
+            return query.ToFacets(new[] {
+                new Facet
+                        {
+                            Name = "StateName"
+                        }
+                });
+        }
+
+        public FacetResults GetJobQueueFacets(
+            IDocumentSession session,
+            Expression<Func<Hangfire_JobQueues.Mapping, bool>> clause)
+        {
+            var query = session.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>();
+            if (clause != null)
+                query = query.Where(clause);
+
+            return query.ToFacets(new[] {
+                new Facet
+                        {
+                            Name = "Queue"
+                        }
+                });
         }
 
         private void InitializeQueueProviders()
