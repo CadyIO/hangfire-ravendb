@@ -7,7 +7,7 @@
     "Moq": "4.7.1",
     "xunit": "2.2.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "RavenDB.Database": "3.5.3-patch-35190"
+    "RavenDB.Database": "3.5.3"
   },
 
   "frameworks": {
