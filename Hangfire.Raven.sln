@@ -1,26 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{8CF2D2F6-BEFE-47FE-B141-0017FC6F97D8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		global.json = global.json
 		README.md = README.md
 	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.Raven", "src\Hangfire.Raven\Hangfire.Raven.xproj", "{BA18F6BF-5613-4B9D-A57A-C05C51148EC5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EF9BFE2C-0386-4EC4-83EC-D7E315F56735}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{54466714-23AC-4D87-90EB-EAD235F84F71}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.Raven.Examples.Console", "examples\Hangfire.Raven.Examples.Console\Hangfire.Raven.Examples.Console.xproj", "{3955F2F1-99AF-4CC0-88F5-C9B69757A1B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven", "src\Hangfire.Raven\Hangfire.Raven.csproj", "{BA18F6BF-5613-4B9D-A57A-C05C51148EC5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.Raven.Examples.AspNetCore", "examples\Hangfire.Raven.Examples.AspNetCore\Hangfire.Raven.Examples.AspNetCore.xproj", "{82A516D0-287C-4DD8-A153-2B3AFFB88241}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven.Examples.Console", "examples\Hangfire.Raven.Examples.Console\Hangfire.Raven.Examples.Console.csproj", "{3955F2F1-99AF-4CC0-88F5-C9B69757A1B2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.Raven.Tests", "src\Hangfire.Raven.Tests\Hangfire.Raven.Tests.xproj", "{2F2C50B7-C556-4A60-81AC-019DAF261556}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven.Examples.AspNetCore", "examples\Hangfire.Raven.Examples.AspNetCore\Hangfire.Raven.Examples.AspNetCore.csproj", "{82A516D0-287C-4DD8-A153-2B3AFFB88241}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven.Tests", "src\Hangfire.Raven.Tests\Hangfire.Raven.Tests.csproj", "{2F2C50B7-C556-4A60-81AC-019DAF261556}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

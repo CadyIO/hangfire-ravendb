@@ -7,7 +7,7 @@ using Xunit;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Refreshing Collective")]
 [assembly: AssemblyProduct("Hangfire.Raven.Tests")]
 [assembly: AssemblyTrademark("")]
 
