@@ -1,11 +1,17 @@
 # Hangfire RavenDB
 
-[![Build Status](https://travis-ci.org/RefreshingIO/hangfire-ravendb.svg?branch=master)](https://travis-ci.org/RefreshingIO/hangfire-ravendb)
+## Build Status
+
+`Platform` | `Master`
+--- | ---
+**Windows** | [![AppVeyor CI status](https://ci.appveyor.com/api/projects/status/5juo1c8p20fnbuwx?svg=true)](https://ci.appveyor.com/project/AustinWinstanley/dewey)
+**Linux / OS X** | [![Travis CI Build Status](https://travis-ci.org/RefreshingIO/hangfire-ravendb.svg?branch=master)](https://travis-ci.org/RefreshingIO/hangfire-ravendb)
+
+## Overview
 
 RavenDB job storage for Hangfire
 
-Usage
---------
+## Usage
 
 This is how you connect to a ravendb server (local or remote)
 ```csharp
@@ -40,7 +46,7 @@ Recurring jobs were never been simpler, just call the following method to perfor
 RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 ```
 
-**Continuations**
+## Continuations
 
 Continuations allow you to define complex workflows by chaining multiple background jobs together.
 
@@ -49,8 +55,7 @@ var id = BackgroundJob.Enqueue(() => Console.WriteLine("Hello, "));
 BackgroundJob.ContinueWith(id, () => Console.WriteLine("world!"));
 ```
 
-License
---------
+## License
 
 Copyright © 2013-2014 Sergey Odinokov.
 
@@ -67,7 +72,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
 
-Known Bugs
-----------
+## Known Bugs
 
 Hangfire.Tests requires RavenDB.Client which requires .Net 4.5. Until RavenDB 4.0 is released, Hangfire.Tests cannot be included and run.

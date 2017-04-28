@@ -1,0 +1,33 @@
+version: 1.0.{build}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+    - production
+
+  # blacklist
+  except:
+    - gh-pages
+
+# build configuration
+configuration:
+- Debug
+- Release
+
+# build platform
+platform: Any CPU
+
+# environment variables
+environment:
+  # Don't report back to the mothership
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+# scripts to run before build
+before_build:
+- cmd: appveyor-retry dotnet restore -v Minimal
+
+# run dotnet cli instead of msbuild
+build_script:
+- dotnet build
