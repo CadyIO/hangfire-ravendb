@@ -1,3 +1,9 @@
+# Hangfire RavenDB
+
+[![Build Status](https://travis-ci.org/RefreshingIO/hangfire-ravendb.svg?branch=master)](https://travis-ci.org/RefreshingIO/hangfire-ravendb)
+
+RavenDB job storage for Hangfire
+
 Usage
 --------
 
