@@ -1,0 +1,9 @@
+language: csharp
+solution: Hangfire.Raven.sln
+mono: none
+dotnet: 1.0.1
+dist: trusty
+sudo: required
+script:
+ - dotnet restore
+ - dotnet build

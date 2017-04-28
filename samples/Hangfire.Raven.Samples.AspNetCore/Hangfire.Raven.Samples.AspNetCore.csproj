@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <Version>3.0.0</Version>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <Description>RavenDB job storage for Hangfire - AspNetCore Example</Description>
+    <Authors>Refreshing Collective &lt;contact@refreshing.io&gt;</Authors>
+    <Company>Refreshing Collective LLC</Company>
+    <Copyright>Copyright @ Refreshing Collective LLC</Copyright>
+    <PackageLicenseUrl>http://www.gnu.org/licenses/lgpl-3.0.html</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/RefreshingIO/hangfire-ravendb</PackageProjectUrl>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/7880472?v=3&amp;s=200</PackageIconUrl>
+    <PackageId>Hangfire.Raven.Samples.AspNetCore</PackageId>
+    <PackageTags>Hangfire;AspNet;MVC;OWIN;RavenDB;Long-Running;Background;Fire-And-Forget;Delayed;Recurring;Tasks;Jobs;Scheduler;Threading;Queues</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/RefreshingIO/hangfire-ravendb</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.6.12" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hangfire.Raven\Hangfire.Raven.csproj" />
+  </ItemGroup>
+
+</Project>

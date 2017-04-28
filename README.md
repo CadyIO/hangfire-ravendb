@@ -60,3 +60,8 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
+
+Known Bugs
+----------
+
+Hangfire.Tests requires RavenDB.Client which requires .Net 4.5. Until RavenDB 4.0 is released, Hangfire.Tests cannot be included and run.

@@ -1,27 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputType>exe</OutputType>
+  </PropertyGroup>
+
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
     <Version>3.0.0</Version>
     <AssemblyVersion>3.0.0.0</AssemblyVersion>
     <FileVersion>3.0.0.0</FileVersion>
-    <Description>RavenDB job storage for Hangfire</Description>
+    <Description>RavenDB job storage for Hangfire - Console Example</Description>
     <Authors>Refreshing Collective &lt;contact@refreshing.io&gt;</Authors>
     <Company>Refreshing Collective LLC</Company>
     <Copyright>Copyright @ Refreshing Collective LLC</Copyright>
     <PackageLicenseUrl>http://www.gnu.org/licenses/lgpl-3.0.html</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/RefreshingIO/hangfire-ravendb</PackageProjectUrl>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/7880472?v=3&amp;s=200</PackageIconUrl>
-    <PackageId>Hangfire.Raven</PackageId>
+    <PackageId>Hangfire.Raven.Samples.Console</PackageId>
     <PackageTags>Hangfire;AspNet;MVC;OWIN;RavenDB;Long-Running;Background;Fire-And-Forget;Delayed;Recurring;Tasks;Jobs;Scheduler;Threading;Queues</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/RefreshingIO/hangfire-ravendb</RepositoryUrl>
+    <ApplicationIcon />
+    <OutputTypeEx>exe</OutputTypeEx>
+    <StartupObject />
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard1.4\Hangfire.Raven.xml</DocumentationFile>
-    <GenerateSerializationAssemblies></GenerateSerializationAssemblies>
-  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="app.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="app.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hangfire.Raven\Hangfire.Raven.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Hangfire.Core" Version="1.6.12" />
