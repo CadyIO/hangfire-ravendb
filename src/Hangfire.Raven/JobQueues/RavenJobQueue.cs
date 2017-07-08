@@ -62,6 +62,7 @@ namespace Hangfire.Raven.JobQueues
                         foreach (var job in repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
                             .Where(fetchCondition)
                             .Where(job => job.Queue == queue)
+                            .Customize(x => x.WaitForNonStaleResultsAsOfNow())
                             .OfType<JobQueue>())
                         {
                             job.FetchedAt = DateTime.UtcNow;
