@@ -4,7 +4,7 @@
 
 `Platform` | `Master`
 --- | ---
-**Windows** | [![Build status](https://ci.appveyor.com/api/projects/status/g5x5v5ghikaq7d3t?svg=true)](https://ci.appveyor.com/project/AustinWinstanley/hangfire-ravendb)
+**Windows** | [![Build status](https://ci.appveyor.com/api/projects/status/hcmu0b0p62mbuwen?svg=true)](https://ci.appveyor.com/project/CadyIO/hangfire-ravendb)
 **Linux / OS X** | [![Travis CI Build Status](https://travis-ci.org/CadyIO/hangfire-ravendb.svg?branch=master)](https://travis-ci.org/CadyIO/hangfire-ravendb)
 
 ## Overview
