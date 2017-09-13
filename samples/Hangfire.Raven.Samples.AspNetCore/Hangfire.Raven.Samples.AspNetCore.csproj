@@ -17,10 +17,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/RefreshingIO/hangfire-ravendb</RepositoryUrl>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.6.16" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
