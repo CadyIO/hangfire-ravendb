@@ -58,7 +58,7 @@ namespace Hangfire.Raven
                 };
             } else {
                 _documentStore = new DocumentStore {
-                    Url = $"{config.ConnectionUrl}/databases/{config.Database}",
+                    Url = $"{config.ConnectionUrl.TrimEnd('/')}/databases/{config.Database}",
                     ApiKey = config.ApiKey
                 };
             }
