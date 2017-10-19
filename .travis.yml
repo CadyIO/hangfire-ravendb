@@ -6,8 +6,8 @@ dist: trusty
 sudo: required
 script:
  - dotnet restore
- - dotnet build -f netstandard1.3
- - dotnet build -f netstandard1.4
- - dotnet build -f netstandard1.5
- - dotnet build -f netstandard1.6
- - dotnet build -f netstandard2.0
+ - dotnet build -f netstandard1.3  ./src/Hangfire.Raven/Hangfire.Raven.csproj
+ - dotnet build -f netstandard1.4  ./src/Hangfire.Raven/Hangfire.Raven.csproj
+ - dotnet build -f netstandard1.5  ./src/Hangfire.Raven/Hangfire.Raven.csproj
+ - dotnet build -f netstandard1.6  ./src/Hangfire.Raven/Hangfire.Raven.csproj
+ - dotnet build -f netstandard2.0  ./src/Hangfire.Raven/Hangfire.Raven.csproj

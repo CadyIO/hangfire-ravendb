@@ -5,8 +5,11 @@ VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{8CF2D2F6-BEFE-47FE-B141-0017FC6F97D8}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.travis.yml = .travis.yml
+		appveyor.yml = appveyor.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -19,8 +22,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven.Samples.AspNetCore", "samples\Hangfire.Raven.Samples.AspNetCore\Hangfire.Raven.Samples.AspNetCore.csproj", "{34B7ED1A-796C-40B8-A8B9-D12D88C8A880}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Raven.Samples.Console", "samples\Hangfire.Raven.Samples.Console\Hangfire.Raven.Samples.Console.csproj", "{A7691484-4466-4F8C-9B57-C77EA0FF4670}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Raven.Samples.Console.DotNet46", "samples\Hangfire.Raven.Samples.Console.DotNet46\Hangfire.Raven.Samples.Console.DotNet46.csproj", "{547D4C07-FC38-4920-9891-D04A5027C0A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +41,6 @@ Global
 		{A7691484-4466-4F8C-9B57-C77EA0FF4670}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7691484-4466-4F8C-9B57-C77EA0FF4670}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7691484-4466-4F8C-9B57-C77EA0FF4670}.Release|Any CPU.Build.0 = Release|Any CPU
-		{547D4C07-FC38-4920-9891-D04A5027C0A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{547D4C07-FC38-4920-9891-D04A5027C0A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{547D4C07-FC38-4920-9891-D04A5027C0A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{547D4C07-FC38-4920-9891-D04A5027C0A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,7 +49,6 @@ Global
 		{BA18F6BF-5613-4B9D-A57A-C05C51148EC5} = {EF9BFE2C-0386-4EC4-83EC-D7E315F56735}
 		{34B7ED1A-796C-40B8-A8B9-D12D88C8A880} = {F42EDD6E-883B-4067-94AD-72EC7A095BF2}
 		{A7691484-4466-4F8C-9B57-C77EA0FF4670} = {F42EDD6E-883B-4067-94AD-72EC7A095BF2}
-		{547D4C07-FC38-4920-9891-D04A5027C0A4} = {F42EDD6E-883B-4067-94AD-72EC7A095BF2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E710484-845C-4FAB-9F3F-2E3384385445}
