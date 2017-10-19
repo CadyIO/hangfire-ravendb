@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>3.1.1</Version>
-    <AssemblyVersion>3.1.1.0</AssemblyVersion>
-    <FileVersion>3.1.1.0</FileVersion>
+    <TargetFrameworks>netstandard2.0;netstandard1.6;netstandard1.5;netstandard1.4;netstandard1.3;net46;net45</TargetFrameworks>
+    <Version>3.2.0</Version>
+    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <FileVersion>3.2.0.0</FileVersion>
     <Description>RavenDB job storage for Hangfire</Description>
     <Authors>CadyIO &lt;contact@cady.io&gt;</Authors>
     <Company>Cady IO</Company>
