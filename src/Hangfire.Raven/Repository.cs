@@ -72,6 +72,7 @@ namespace Hangfire.Raven
                 };
 
                 ((EmbeddableDocumentStore)_documentStore).Configuration.Storage.Voron.AllowOn32Bits = true;
+                _database = ((EmbeddableDocumentStore)_documentStore).DefaultDatabase;
             }
             else if(config.Embedded)
             {
@@ -84,6 +85,7 @@ namespace Hangfire.Raven
                 };
 
                 ((EmbeddableDocumentStore)_documentStore).Configuration.Storage.Voron.AllowOn32Bits = true;
+                _database = ((EmbeddableDocumentStore)_documentStore).DefaultDatabase;                    
             }
             else if (!string.IsNullOrEmpty(config.ConnectionStringName))
             {
@@ -91,6 +93,8 @@ namespace Hangfire.Raven
                 {
                     ConnectionStringName = config.ConnectionStringName
                 };
+
+                _database = ((DocumentStore)_documentStore).DefaultDatabase;
             }
             else
             {
@@ -100,6 +104,8 @@ namespace Hangfire.Raven
                     ApiKey = config.ApiKey,
                     DefaultDatabase = config.Database
                 };
+
+                _database = ((DocumentStore)_documentStore).DefaultDatabase;
             }
 #else
             if (!string.IsNullOrEmpty(config.ConnectionStringName))
@@ -126,8 +132,8 @@ namespace Hangfire.Raven
             _documentStore.Initialize();
 #else
             _documentStore.Initialize(ensureDatabaseExists: false);
+            _database = _documentStore.DefaultDatabase;
 #endif
-            _database = config.Database;
         }
 
         public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
