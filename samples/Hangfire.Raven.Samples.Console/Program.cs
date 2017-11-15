@@ -20,10 +20,6 @@ namespace Hangfire.Raven.Samples.Console
                 //    .UseColouredConsoleLogProvider()
                 //    .UseRavenStorage("http://localhost:9090", "HangfireConsole");
 
-                // you can use Raven Embedded Storage which runs in memory!
-                //GlobalConfiguration.Configuration
-                //    .UseColouredConsoleLogProvider()
-                //    .UseEmbeddedRavenStorage();
 
                 //you have to create an instance of background job server at least once for background jobs to run
                 var client = new BackgroundJobServer();
