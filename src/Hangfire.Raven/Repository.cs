@@ -7,6 +7,9 @@ using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Indexes;
 using System.IO;
+#if NETFULL
+using Raven.Client.Embedded;
+#endif
 
 namespace Hangfire.Raven
 {
@@ -16,6 +19,9 @@ namespace Hangfire.Raven
         public string ConnectionUrl { get; set; }
         public string Database { get; set; }
         public string ApiKey { get; set; }
+#if NETFULL
+        public bool Embedded { get; set; }
+#endif
     }
 
     public class RepositoryObserver<T>
@@ -46,28 +52,82 @@ namespace Hangfire.Raven
 
     public class Repository : IRepository
     {
+#if NETFULL
+        private IDocumentStore _documentStore;
+#else
         private DocumentStore _documentStore;
+#endif
 
         private string _database;
 
         public Repository(RepositoryConfig config)
         {
-            if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
-                _documentStore = new DocumentStore {
+#if NETFULL
+            if(config.Embedded && !string.IsNullOrEmpty(config.ConnectionStringName))
+            {
+                _documentStore = new EmbeddableDocumentStore
+                {
+                    RunInMemory = true,
+                    ConnectionStringName = config.ConnectionStringName,
+                };
+
+                ((EmbeddableDocumentStore)_documentStore).Configuration.Storage.Voron.AllowOn32Bits = true;
+            }
+            else if(config.Embedded)
+            {
+                _documentStore = new EmbeddableDocumentStore
+                {
+                    RunInMemory = true,
+                    Url = config.ConnectionUrl,
+                    ApiKey = config.ApiKey,
+                    DefaultDatabase = config.Database
+                };
+
+                ((EmbeddableDocumentStore)_documentStore).Configuration.Storage.Voron.AllowOn32Bits = true;
+            }
+            else if (!string.IsNullOrEmpty(config.ConnectionStringName))
+            {
+                _documentStore = new DocumentStore
+                {
                     ConnectionStringName = config.ConnectionStringName
                 };
-            } else {
-                _documentStore = new DocumentStore {
+            }
+            else
+            {
+                _documentStore = new DocumentStore
+                {
                     Url = config.ConnectionUrl,
                     ApiKey = config.ApiKey,
                     DefaultDatabase = config.Database
                 };
             }
+#else
+            if (!string.IsNullOrEmpty(config.ConnectionStringName))
+            {   
+                _documentStore = new DocumentStore
+                {
+                    ConnectionStringName = config.ConnectionStringName
+                };
+            }
+            else
+            {
+                _documentStore = new DocumentStore
+                {
+                    Url = config.ConnectionUrl,
+                    ApiKey = config.ApiKey,
+                    DefaultDatabase = config.Database
+                };
+            }
+#endif
+
 
             _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
+#if NETFULL
+            _documentStore.Initialize();
+#else
             _documentStore.Initialize(ensureDatabaseExists: false);
-
-            _database = _documentStore.DefaultDatabase;
+#endif
+            _database = config.Database;
         }
 
         public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
