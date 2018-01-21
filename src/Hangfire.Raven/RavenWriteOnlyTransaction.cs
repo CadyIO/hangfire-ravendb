@@ -7,9 +7,9 @@ using Hangfire.Raven.Storage;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
-using Raven.Abstractions.Data;
-using Raven.Client;
 using Hangfire.Logging;
+using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Operations;
 
 namespace Hangfire.Raven
 {
