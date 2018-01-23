@@ -163,9 +163,8 @@ namespace Hangfire.Raven
                 _session.Store(counter);
 
                 if (expireIn != TimeSpan.MinValue) {
-
                     var metadata = _session.Advanced.GetMetadataFor(id);
-                    metadata[Constants.Documents.Metadata.Expires] = expireIn.ToString("O");
+                    metadata[Constants.Documents.Metadata.Expires] = (DateTime.UtcNow + expireIn).ToString("O");
                 }
             } else {
                 _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
