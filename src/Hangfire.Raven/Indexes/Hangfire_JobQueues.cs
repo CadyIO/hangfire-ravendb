@@ -1,11 +1,9 @@
 ﻿using Hangfire.Raven.Entities;
-using Raven.Abstractions.Indexing;
-using Raven.Client.Indexes;
+using Raven.Client.Documents.Indexes;
 using System;
 using System.Linq;
 
-namespace Hangfire.Raven.Indexes
-{
+namespace Hangfire.Raven.Indexes {
     public class Hangfire_JobQueues
         : AbstractIndexCreationTask<JobQueue>
     {
@@ -26,7 +24,9 @@ namespace Hangfire.Raven.Indexes
                                    JobId = result.JobId
                                };
             Analyze("Queue", "WhitespaceAnalyzer");
-            Sort("FetchedAt", SortOptions.String);
+            
+            //Probably not supported in 4.0
+            //Sort("FetchedAt", SortOptions.String);
         }
     }
 }

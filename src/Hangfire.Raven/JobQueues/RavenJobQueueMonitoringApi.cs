@@ -71,11 +71,11 @@ namespace Hangfire.Raven.JobQueues
         {
             using (var repository = _storage.Repository.OpenSession())
             {
-                var fetchedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt != null && a.Queue == queue);
-                var fetchedCount = fetchedQuery.Results["Queue"].Values.Sum(a => a.Hits);
+                var fetchedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt != null && a.Queue == queue).Execute();
+                var fetchedCount = fetchedQuery.Values.Sum(a => a.RemainingHits);
 
-                var enqueuedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt == null && a.Queue == queue);
-                var enqueuedCount = enqueuedQuery.Results["Queue"].Values.Sum(a => a.Hits);
+                var enqueuedQuery = _storage.GetJobQueueFacets(repository, a => a.FetchedAt == null && a.Queue == queue).Execute();
+                var enqueuedCount = enqueuedQuery.Values.Sum(a => a.RemainingHits);
 
                 return new EnqueuedAndFetchedCount
                 {

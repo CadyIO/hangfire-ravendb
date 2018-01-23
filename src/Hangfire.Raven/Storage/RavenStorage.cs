@@ -4,14 +4,14 @@ using Hangfire.Logging;
 using Hangfire.Raven.Indexes;
 using Hangfire.Raven.JobQueues;
 using Hangfire.Storage;
-using Raven.Client.Indexes;
-using Raven.Abstractions.Data;
 using System.Linq.Expressions;
-using Raven.Client;
-using Raven.Client.Linq;
+using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Queries.Facets;
+using Raven.Client.Documents.Linq;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
 
-namespace Hangfire.Raven.Storage
-{
+namespace Hangfire.Raven.Storage {
     public class RavenStorage : JobStorage
     {
         private readonly RavenStorageOptions _options;
@@ -76,7 +76,7 @@ namespace Hangfire.Raven.Storage
             logger.Info("Using the following options for Raven job storage:");
         }
 
-        public FacetResults GetRavenJobFacets(
+        public IAggregationQuery<Hangfire_RavenJobs.Mapping> GetRavenJobFacets(
                     IDocumentSession session,
                     Expression<Func<Hangfire_RavenJobs.Mapping, bool>> clause)
         {
@@ -84,15 +84,15 @@ namespace Hangfire.Raven.Storage
             if (clause != null)
                 query = query.Where(clause);
 
-            return query.ToFacets(new[] {
+            return query.AggregateBy(new[] {
                 new Facet
                         {
-                            Name = "StateName"
+                            FieldName = "StateName"
                         }
-                });
-        }
+                }); ;
+        } 
 
-        public FacetResults GetJobQueueFacets(
+        public IAggregationQuery<Hangfire_JobQueues.Mapping> GetJobQueueFacets(
             IDocumentSession session,
             Expression<Func<Hangfire_JobQueues.Mapping, bool>> clause)
         {
@@ -100,10 +100,10 @@ namespace Hangfire.Raven.Storage
             if (clause != null)
                 query = query.Where(clause);
 
-            return query.ToFacets(new[] {
+            return query.AggregateBy(new[] {
                 new Facet
                         {
-                            Name = "Queue"
+                            FieldName = "Queue"
                         }
                 });
         }

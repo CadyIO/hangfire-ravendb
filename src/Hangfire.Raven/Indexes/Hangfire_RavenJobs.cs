@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Hangfire.Raven.Entities;
-using Raven.Client.Indexes;
+using Raven.Client.Documents.Indexes;
 
-namespace Hangfire.Raven.Indexes
-{
+namespace Hangfire.Raven.Indexes {
     public class Hangfire_RavenJobs
         : AbstractIndexCreationTask<RavenJob>
     {

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Hangfire.Raven.Entities;
-using Raven.Client.Indexes;
-using Raven.Abstractions.Indexing;
+using Raven.Client.Documents.Indexes;
 
-namespace Hangfire.Raven.Indexes
-{
+namespace Hangfire.Raven.Indexes {
     public class Hangfire_RavenServers
         : AbstractIndexCreationTask<RavenServer>
     {
@@ -20,7 +18,8 @@ namespace Hangfire.Raven.Indexes
                              select new Mapping {
                                  LastHeartbeat = result.LastHeartbeat
                              };
-            Sort("LastHeartbeat", SortOptions.String);
+            //Server should do this
+            //Sort("LastHeartbeat", SortOptions.String);
         }
     }
 }

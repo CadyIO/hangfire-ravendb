@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hangfire.Raven.Extensions;
-using Hangfire.Raven.Listeners;
-using Raven.Abstractions.Data;
-using Raven.Client;
-using Raven.Client.Document;
-using Raven.Client.Indexes;
 using System.IO;
+using Raven.Client.Documents;
+using Raven.Client.ServerWide.Operations;
+using Raven.Client.ServerWide;
+using Raven.Client.Documents.Queries.Facets;
+using Raven.Client.Documents.Queries;
+using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Indexes;
 
-namespace Hangfire.Raven
-{
+namespace Hangfire.Raven {
     public class RepositoryConfig
     {
         public string ConnectionStringName { get; set; }
@@ -53,24 +54,28 @@ namespace Hangfire.Raven
         public Repository(RepositoryConfig config)
         {
             if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
-                _documentStore = new DocumentStore {
+                /*
+                 * TODO
+                 * 
+                 * As the configuration system has been changed in .NET Core, we removed the ConnectionStringName property. Instead you can use the .NET core configuration mechanism, retrieve the connection string entry from appsettings.json, convert it, and manually set Urls and Database properties.
+                 */
+                /*_documentStore = new DocumentStore {
                     ConnectionStringName = config.ConnectionStringName
-                };
+                };*/
             } else {
                 _documentStore = new DocumentStore {
-                    Url = config.ConnectionUrl,
-                    ApiKey = config.ApiKey,
-                    DefaultDatabase = config.Database
+                    Urls = new[] { config.ConnectionUrl },
+                    ///ApiKey = config.ApiKey,
+                    Database = config.Database
                 };
             }
 
-            _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
-            _documentStore.Initialize(ensureDatabaseExists: false);
+            _documentStore.Initialize();
 
-            _database = _documentStore.DefaultDatabase;
+            _database = _documentStore.Database;
         }
 
-        public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
+        public FacetResult GetFacets(string index, IndexQuery query, List<Facet> facets)
         {
             return _documentStore.DatabaseCommands.GetFacets(index, query, facets);
         }
@@ -100,7 +105,9 @@ namespace Hangfire.Raven
                 return;
             }
 
-            _documentStore
+            _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
+           
+            /*_documentStore
                 .DatabaseCommands
                 .GlobalAdmin
                 .CreateDatabase(new DatabaseDocument {
@@ -110,21 +117,7 @@ namespace Hangfire.Raven
                         { "Raven/StorageTypeName", "voron" },
                         { "Raven/DataDir", Path.Combine("~", _database) },
                     }
-                });
-        }
-
-        public IDisposable DocumentChange(Type documentType, Action<DocumentChangeNotification> action)
-        {
-            return _documentStore.Changes(_database).ForDocumentsStartingWith(GetId(documentType, ""))
-                .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
-        }
-
-        public IDisposable DocumentChange(Type documentType, string suffix, Action<DocumentChangeNotification> action)
-        {
-            return _documentStore.Changes(_database).ForDocumentsStartingWith(
-                    GetId(documentType, string.Format("{0}/", suffix))
-                )
-                .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
+                });*/
         }
 
         public IDocumentSession OpenSession()
@@ -140,6 +133,18 @@ namespace Hangfire.Raven
         public void Dispose()
         {
             _documentStore.Dispose();
+        }
+
+        IList<FacetResult> IRepository.GetFacets(string index, IndexQuery query, List<Facet> facets) {
+            throw new NotImplementedException();
+        }
+
+        IAsyncDocumentSession IRepository.OpenAsyncSession() {
+            throw new NotImplementedException();
+        }
+
+        IDocumentSession IRepository.OpenSession() {
+            throw new NotImplementedException();
         }
     }
 }

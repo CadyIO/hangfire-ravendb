@@ -175,9 +175,8 @@ namespace Hangfire.Raven
                     return null;
                 }
 
-                string value;
 
-                if (!job.Parameters.TryGetValue(name, out value)) {
+                if (!job.Parameters.TryGetValue(name, out string value)) {
                     if (name == "RetryCount") {
                         job.Parameters["RetryCount"] = "0";
                         repository.SaveChanges();
@@ -475,9 +474,8 @@ namespace Hangfire.Raven
                     return null;
                 }
 
-                string result;
 
-                if (!ravenHash.Fields.TryGetValue(name, out result)) {
+                if (!ravenHash.Fields.TryGetValue(name, out string result)) {
                     return null;
                 }
 

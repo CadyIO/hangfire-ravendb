@@ -1,9 +1,7 @@
 ﻿using System;
-using Raven.Abstractions.Indexing;
-using Raven.Client.Indexes;
+using Raven.Client.Documents.Indexes;
 
-namespace Hangfire.Raven.Indexes
-{
+namespace Hangfire.Raven.Indexes {
     public class Raven_DocumentsByEntityName
         : AbstractIndexCreationTask
     {

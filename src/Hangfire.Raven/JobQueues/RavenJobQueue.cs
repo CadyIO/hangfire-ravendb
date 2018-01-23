@@ -5,14 +5,12 @@ using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage;
-using Raven.Abstractions.Exceptions;
-using Raven.Client.Linq;
 using Hangfire.Logging;
 using Hangfire.Raven.Indexes;
 using System.Linq.Expressions;
+using Raven.Client.Exceptions;
 
-namespace Hangfire.Raven.JobQueues
-{
+namespace Hangfire.Raven.JobQueues {
     public class RavenJobQueue : IPersistentJobQueue
     {
         private static readonly ILog Logger = LogProvider.For<RavenJobQueue>();
@@ -61,8 +59,7 @@ namespace Hangfire.Raven.JobQueues
                     {
                         foreach (var job in repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
                             .Where(fetchCondition)
-                            .Where(job => job.Queue == queue)
-                            .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                            .Where(job => job.Queue == queue)                    
                             .OfType<JobQueue>())
                         {
                             job.FetchedAt = DateTime.UtcNow;

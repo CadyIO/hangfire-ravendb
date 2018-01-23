@@ -5,10 +5,9 @@ using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Logging;
 using Hangfire.Storage;
-using Raven.Abstractions.Exceptions;
+using Raven.Client.Exceptions;
 
-namespace Hangfire.Raven.DistributedLocks
-{
+namespace Hangfire.Raven.DistributedLocks {
     public class RavenDistributedLock : IDisposable
     {
         private static readonly ILog Logger = LogProvider.For<RavenDistributedLock>();
