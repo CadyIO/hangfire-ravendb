@@ -55,7 +55,6 @@ namespace Hangfire.Raven
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
-            var result = _session.Load<RavenJob>(id);
 
             SetExpiry(id, expireIn);
         }
@@ -63,7 +62,6 @@ namespace Hangfire.Raven
         public override void PersistJob(string jobId)
         {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
-            //var result = _session.Load<RavenJob>(id);
 
             RemoveExpiry(id);
         }
