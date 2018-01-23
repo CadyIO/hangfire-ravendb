@@ -11,6 +11,7 @@ using Hangfire.Logging;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Commands.Batches;
+using Raven.Client;
 
 namespace Hangfire.Raven
 {
@@ -161,9 +162,11 @@ namespace Hangfire.Raven
 
                 _session.Store(counter);
 
-                /*if (expireIn != TimeSpan.MinValue) {
-                    _session.Advanced.AddExpire(counter, DateTime.UtcNow + expireIn);
-                }*/
+                if (expireIn != TimeSpan.MinValue) {
+
+                    var metadata = _session.Advanced.GetMetadataFor(id);
+                    metadata[Constants.Documents.Metadata.Expires] = expireIn.ToString("O");
+                }
             } else {
                 _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
                     Script = @"this.Value -= 1"
