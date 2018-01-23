@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputType>exe</OutputType>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,7 +22,7 @@
     <RepositoryUrl>https://github.com/CadyIO/hangfire-ravendb</RepositoryUrl>
     <ApplicationIcon />
     <OutputTypeEx>exe</OutputTypeEx>
-    <StartupObject />
+    <StartupObject>Hangfire.Raven.Samples.Console.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
