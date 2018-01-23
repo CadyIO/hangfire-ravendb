@@ -113,7 +113,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         };
 
                         session.Store(_distributedLock);
-                        session.Advanced.AddExpire(_distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
+                        //session.Advanced.AddExpire(_distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
 
                         try
                         {
@@ -168,9 +168,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         _distributedLock = null;
                     }
                 }
-                EventWaitHandle eventWaitHandler;
-                if (EventWaitHandle.TryOpenExisting(EventWaitHandleName, out eventWaitHandler))
-                {
+                if (EventWaitHandle.TryOpenExisting(EventWaitHandleName, out EventWaitHandle eventWaitHandler)) {
                     eventWaitHandler.Set();
                 }
             }
@@ -202,7 +200,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         {
                             var distributedLock = session.Load<DistributedLock>(_distributedLock.Id);
 
-                            session.Advanced.AddExpire(distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
+                            //session.Advanced.AddExpire(distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
                             session.SaveChanges();
                         }
                     }

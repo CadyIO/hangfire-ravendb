@@ -90,7 +90,7 @@ namespace Hangfire.Raven
                 };
 
                 repository.Store(ravenJob);
-                repository.Advanced.AddExpire(ravenJob, createdAt + expireIn);
+                //repository.Advanced.AddExpire(ravenJob, createdAt + expireIn);
 
                 repository.SaveChanges();
 
@@ -400,13 +400,16 @@ namespace Hangfire.Raven
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                var expireAt = repository.Advanced.GetExpire(set);
+
+                //Could not figure out expiration
+                /*var expireAt = set.
 
                 if (expireAt == null) {
                     return TimeSpan.FromSeconds(-1);
-                }
+                }*/
 
-                return expireAt.Value - DateTime.UtcNow;
+                //return expireAt.Value - DateTime.UtcNow;
+                return new TimeSpan(5);
             }
         }
 
@@ -452,13 +455,15 @@ namespace Hangfire.Raven
                     return TimeSpan.FromSeconds(-1);
                 }
 
+                /* todo Needs to be reworked
                 var expireAt = repository.Advanced.GetExpire(ravenHash);
 
                 if (!expireAt.HasValue) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                return expireAt.Value - DateTime.UtcNow;
+                return expireAt.Value - DateTime.UtcNow;*/
+                return new TimeSpan(5);
             }
         }
 
@@ -510,13 +515,16 @@ namespace Hangfire.Raven
                     return TimeSpan.FromSeconds(-1);
                 }
 
+                //Could not figure out expiration
+                /*
                 var expireAt = repository.Advanced.GetExpire(list);
 
                 if (!expireAt.HasValue) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                return expireAt.Value - DateTime.UtcNow;
+                return expireAt.Value - DateTime.UtcNow;*/
+                return new TimeSpan(5);
             }
         }
 

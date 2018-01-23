@@ -11,8 +11,7 @@ using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Indexes;
 
 namespace Hangfire.Raven {
-    public class RepositoryConfig
-    {
+    public class RepositoryConfig {
         public string ConnectionStringName { get; set; }
         public string ConnectionUrl { get; set; }
         public string Database { get; set; }
@@ -20,39 +19,32 @@ namespace Hangfire.Raven {
     }
 
     public class RepositoryObserver<T>
-        : IObserver<T>
-    {
+        : IObserver<T> {
         private Action<T> _action;
 
-        public RepositoryObserver(Action<T> input)
-        {
+        public RepositoryObserver(Action<T> input) {
             _action = input;
         }
 
-        public void OnCompleted()
-        {
+        public void OnCompleted() {
 
         }
 
-        public void OnError(Exception error)
-        {
+        public void OnError(Exception error) {
 
         }
 
-        public void OnNext(T value)
-        {
+        public void OnNext(T value) {
             _action.Invoke(value);
         }
     }
 
-    public class Repository : IRepository
-    {
+    public class Repository : IRepository {
         private DocumentStore _documentStore;
 
         private string _database;
 
-        public Repository(RepositoryConfig config)
-        {
+        public Repository(RepositoryConfig config) {
             if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
                 /*
                  * TODO
@@ -75,38 +67,25 @@ namespace Hangfire.Raven {
             _database = _documentStore.Database;
         }
 
-        public FacetResult GetFacets(string index, IndexQuery query, List<Facet> facets)
-        {
-            return _documentStore.DatabaseCommands.GetFacets(index, query, facets);
-        }
-
-        public void ExecuteIndexes(List<AbstractIndexCreationTask> indexes)
-        {
+        public void ExecuteIndexes(List<AbstractIndexCreationTask> indexes) {
             _documentStore.ExecuteIndexes(indexes);
         }
 
-        public string GetId(Type type, params string[] id)
-        {
-            return _documentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(string.Join("/", id), type, false);
-        }
-
-        public void Destroy()
-        {
+        public void Destroy() {
             if (_database == null || !_documentStore.DatabaseExists(_database)) {
                 return;
             }
 
-            _documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_database, hardDelete: true);
+            //_documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_database, hardDelete: true);
         }
 
-        public void Create()
-        {
+        public void Create() {
             if (_database == null || _documentStore.DatabaseExists(_database)) {
                 return;
             }
 
             _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
-           
+
             /*_documentStore
                 .DatabaseCommands
                 .GlobalAdmin
@@ -120,18 +99,15 @@ namespace Hangfire.Raven {
                 });*/
         }
 
-        public IDocumentSession OpenSession()
-        {
+        public IDocumentSession OpenSession() {
             return _documentStore.OpenSession(_database);
         }
 
-        public IAsyncDocumentSession OpenAsyncSession()
-        {
+        public IAsyncDocumentSession OpenAsyncSession() {
             return _documentStore.OpenAsyncSession(_database);
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _documentStore.Dispose();
         }
 
@@ -139,12 +115,10 @@ namespace Hangfire.Raven {
             throw new NotImplementedException();
         }
 
-        IAsyncDocumentSession IRepository.OpenAsyncSession() {
-            throw new NotImplementedException();
-        }
+        IAsyncDocumentSession IRepository.OpenAsyncSession() => _documentStore.OpenAsyncSession();
 
-        IDocumentSession IRepository.OpenSession() {
-            throw new NotImplementedException();
-        }
+        IDocumentSession IRepository.OpenSession() => _documentStore.OpenSession();
+
+        public string GetId(Type type, params string[] id) => type.ToString() + '/' + string.Join("/", id);
     }
 }

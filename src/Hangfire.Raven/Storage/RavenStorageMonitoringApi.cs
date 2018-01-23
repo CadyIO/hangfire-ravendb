@@ -128,12 +128,12 @@ namespace Hangfire.Raven.Storage {
                     Servers = stat.TotalResults,
                     Queues = getJobFacetValues.Count(),
                     Recurring = recurringJobs?.Scores?.Count ?? 0,
-                    Succeeded = getFacetValues.FirstOrDefault(a => a.Range == SucceededState.StateName)?.Hits ?? 0,
-                    Scheduled = getFacetValues.FirstOrDefault(a => a.Range == ScheduledState.StateName)?.Hits ?? 0,
-                    Enqueued = getFacetValues.FirstOrDefault(a => a.Range == EnqueuedState.StateName)?.Hits ?? 0,
-                    Failed = getFacetValues.FirstOrDefault(a => a.Range == FailedState.StateName)?.Hits ?? 0,
-                    Processing = getFacetValues.FirstOrDefault(a => a.Range == ProcessingState.StateName)?.Hits ?? 0,
-                    Deleted = getFacetValues.FirstOrDefault(a => a.Range == DeletedState.StateName)?.Hits ?? 0,
+                    Succeeded = getFacetValues.FirstOrDefault(a => a.Name == SucceededState.StateName)?.RemainingHits ?? 0,
+                    Scheduled = getFacetValues.FirstOrDefault(a => a.Name == ScheduledState.StateName)?.RemainingHits ?? 0,
+                    Enqueued = getFacetValues.FirstOrDefault(a => a.Name == EnqueuedState.StateName)?.RemainingHits ?? 0,
+                    Failed = getFacetValues.FirstOrDefault(a => a.Name == FailedState.StateName)?.RemainingHits ?? 0,
+                    Processing = getFacetValues.FirstOrDefault(a => a.Name == ProcessingState.StateName)?.RemainingHits ?? 0,
+                    Deleted = getFacetValues.FirstOrDefault(a => a.Name == DeletedState.StateName)?.RemainingHits ?? 0,
                 };
             }
         }
@@ -225,7 +225,7 @@ namespace Hangfire.Raven.Storage {
 
                 return new JobDetailsDto {
                     CreatedAt = job.CreatedAt,
-                    ExpireAt = repository.Advanced.GetExpire(job),
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
                     Job = DeserializeJob(job.InvocationData),
                     History = job.History,
                     Properties = job.Parameters
