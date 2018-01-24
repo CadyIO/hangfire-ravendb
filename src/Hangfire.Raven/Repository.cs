@@ -76,7 +76,7 @@ namespace Hangfire.Raven {
                 return;
             }
 
-            //_documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_database, hardDelete: true);
+            _documentStore.Maintenance.Server.Send(new DeleteDatabasesOperation(_database, hardDelete: true, fromNode: null, timeToWaitForConfirmation: null));
         }
 
         public void Create() {

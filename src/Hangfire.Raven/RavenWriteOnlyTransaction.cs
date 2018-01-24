@@ -12,6 +12,7 @@ using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client;
+using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven
 {
@@ -56,14 +57,14 @@ namespace Hangfire.Raven
         {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
 
-            SetExpiry(id, expireIn);
+            _session.SetExpiry<RavenJob>(id, expireIn);
         }
 
         public override void PersistJob(string jobId)
         {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
 
-            RemoveExpiry(id);
+            _session.RemoveExpiry<RavenJob>(id);
         }
 
         public override void SetJobState(string jobId, IState state)
@@ -134,7 +135,7 @@ namespace Hangfire.Raven
                 _session.Store(counter);
 
                 if (expireIn != TimeSpan.MinValue) {
-                    SetExpiry(id, expireIn);
+                    _session.SetExpiry<Counter>(id, expireIn);
                 }
             } else {
                 _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
@@ -161,7 +162,7 @@ namespace Hangfire.Raven
                 _session.Store(counter);
 
                 if (expireIn != TimeSpan.MinValue) {
-                    SetExpiry(id, expireIn);
+                    _session.SetExpiry<Counter>(id, expireIn);
                 }
             } else {
                 _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
@@ -221,7 +222,7 @@ namespace Hangfire.Raven
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
             var set = _session.Load<RavenSet>(id);
 
-            SetExpiry(id, expireIn);
+            _session.SetExpiry<RavenSet>(id, expireIn);
         }
 
         public override void PersistSet([NotNull] string key)
@@ -230,7 +231,7 @@ namespace Hangfire.Raven
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
-            RemoveExpiry(id);
+            _session.RemoveExpiry<RavenSet>(id);
         }
 
 
@@ -287,7 +288,7 @@ namespace Hangfire.Raven
 
             var id = _storage.Repository.GetId(typeof(RavenList), key);
 
-            SetExpiry(id, expireIn);
+            _session.SetExpiry<RavenList>(id, expireIn);
         }
 
         public override void PersistList(string key)
@@ -296,7 +297,7 @@ namespace Hangfire.Raven
 
             var id = _storage.Repository.GetId(typeof(RavenList), key);
 
-            RemoveExpiry(id);
+            _session.RemoveExpiry<RavenList>(id);
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -334,7 +335,7 @@ namespace Hangfire.Raven
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
 
-            SetExpiry(id, expireIn);
+            _session.SetExpiry<RavenHash>(id, expireIn);
         }
 
         public override void PersistHash([NotNull] string key)
@@ -342,18 +343,7 @@ namespace Hangfire.Raven
             key.ThrowIfNull("key");
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
-            RemoveExpiry(id);
+            _session.RemoveExpiry<RavenHash>(id);
         }
-
-        private void SetExpiry(string id, TimeSpan expireIn) {
-            var metadata = _session.Advanced.GetMetadataFor(id);
-            metadata[Constants.Documents.Metadata.Expires] = (DateTime.UtcNow + expireIn).ToString("O");
-        }
-
-        private void RemoveExpiry(string id) {
-            var metadata = _session.Advanced.GetMetadataFor(id);
-            metadata.Remove(Constants.Documents.Metadata.Expires);
-        }
-
     }
 }

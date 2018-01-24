@@ -40,11 +40,11 @@ namespace Hangfire.Raven.JobQueues {
 
             JobQueue fetchedJob = null;
 
-            var seconds = DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds;
+            var seconds = DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds);
             var fetchConditions = new Expression<Func<Hangfire_JobQueues.Mapping, bool>>[]
             {
                 job => job.FetchedAt == null,
-                job => job.FetchedAt < seconds)
+                job => job.FetchedAt < seconds
             };
             var currentQueryIndex = 0;
 

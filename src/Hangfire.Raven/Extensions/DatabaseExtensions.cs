@@ -1,14 +1,15 @@
 ﻿using Raven.Client.Documents;
+using Raven.Client.ServerWide.Operations;
+using System.Linq;
 
 namespace Hangfire.Raven.Extensions {
     public static class DatabaseExtensions
     {
         public static bool DatabaseExists(this IDocumentStore documentStore, string database)
         {
-            //todo check if db exists
-            //var result = documentStore.ForSystemDatabase().Head("Raven/Databases/" + database);
-
-            return false;
+            var operation = new GetDatabaseNamesOperation(0, 25);
+            string[] databaseNames = documentStore.Maintenance.Server.Send(operation);
+            return databaseNames.Contains(database);
         }
     }
 }

@@ -11,14 +11,14 @@ namespace Hangfire.Raven.Samples.Console
         {
             try {
                 // you can use Raven Storage and specify the connection string name
-                GlobalConfiguration.Configuration
-                    .UseColouredConsoleLogProvider()
-                    .UseRavenStorage("RavenDebug");
-
-                // you can use Raven Storage and specify the connection string and database name
                 //GlobalConfiguration.Configuration
                 //    .UseColouredConsoleLogProvider()
-                //    .UseRavenStorage("http://localhost:9090", "HangfireConsole");
+                //    .UseRavenStorage("RavenDebug");
+
+                // you can use Raven Storage and specify the connection string and database name
+                GlobalConfiguration.Configuration
+                    .UseColouredConsoleLogProvider()
+                    .UseRavenStorage("http://localhost:8080", "HangfireConsole");
 
                 // you can use Raven Embedded Storage which runs in memory!
                 //GlobalConfiguration.Configuration

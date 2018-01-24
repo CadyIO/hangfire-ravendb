@@ -26,15 +26,13 @@ using Hangfire.Server;
 using Hangfire.Storage;
 using static Hangfire.Raven.Entities.RavenJob;
 using Hangfire.Raven.Indexes;
+using Hangfire.Raven.Extensions;
 
-namespace Hangfire.Raven
-{
-    public class RavenConnection : JobStorageConnection
-    {
+namespace Hangfire.Raven {
+    public class RavenConnection : JobStorageConnection {
         private readonly RavenStorage _storage;
 
-        public RavenConnection(RavenStorage storage)
-        {
+        public RavenConnection(RavenStorage storage) {
             storage.ThrowIfNull("storage");
 
             _storage = storage;
@@ -44,8 +42,7 @@ namespace Hangfire.Raven
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) => new RavenDistributedLock(_storage, string.Format("HangFire/{0}", resource), timeout, _storage.Options);
 
-        public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
-        {
+        public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken) {
             queues.ThrowIfNull("queues");
 
             if (queues.Length == 0) {
@@ -72,8 +69,7 @@ namespace Hangfire.Raven
             Job job,
             IDictionary<string, string> parameters,
             DateTime createdAt,
-            TimeSpan expireIn)
-        {
+            TimeSpan expireIn) {
             job.ThrowIfNull("job");
             parameters.ThrowIfNull("parameters");
 
@@ -98,8 +94,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override JobData GetJobData(string key)
-        {
+        public override JobData GetJobData(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -113,12 +108,9 @@ namespace Hangfire.Raven
                 Job job = null;
                 JobLoadException loadException = null;
 
-                try
-                {
+                try {
                     job = jobData.InvocationData.Deserialize();
-                }
-                catch (JobLoadException ex)
-                {
+                } catch (JobLoadException ex) {
                     loadException = ex;
                 }
 
@@ -131,8 +123,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override StateData GetStateData(string jobId)
-        {
+        public override StateData GetStateData(string jobId) {
             jobId.ThrowIfNull("jobId");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -147,8 +138,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void SetJobParameter(string jobId, string name, string value)
-        {
+        public override void SetJobParameter(string jobId, string name, string value) {
             jobId.ThrowIfNull("jobId");
             name.ThrowIfNull("name");
 
@@ -162,8 +152,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override string GetJobParameter(string jobId, string name)
-        {
+        public override string GetJobParameter(string jobId, string name) {
             jobId.ThrowIfNull("jobId");
             name.ThrowIfNull("name");
 
@@ -191,8 +180,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override HashSet<string> GetAllItemsFromSet(string key)
-        {
+        public override HashSet<string> GetAllItemsFromSet(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -207,8 +195,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
-        {
+        public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore) {
             key.ThrowIfNull("key");
 
             if (toScore < fromScore) {
@@ -227,8 +214,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
-        {
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs) {
             key.ThrowIfNull("key");
             keyValuePairs.ThrowIfNull("keyValuePairs");
 
@@ -252,8 +238,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override Dictionary<string, string> GetAllEntriesFromHash(string key)
-        {
+        public override Dictionary<string, string> GetAllEntriesFromHash(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -263,8 +248,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void AnnounceServer(string serverId, ServerContext context)
-        {
+        public override void AnnounceServer(string serverId, ServerContext context) {
             serverId.ThrowIfNull("serverId");
             context.ThrowIfNull("context");
 
@@ -275,8 +259,7 @@ namespace Hangfire.Raven
                 if (server == null) {
                     server = new RavenServer() {
                         Id = id,
-                        Data = new RavenServer.ServerData()
-                        {
+                        Data = new RavenServer.ServerData() {
                             StartedAt = DateTime.UtcNow
                         }
                     };
@@ -294,8 +277,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void RemoveServer(string serverId)
-        {
+        public override void RemoveServer(string serverId) {
             serverId.ThrowIfNull("serverId");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -307,8 +289,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void Heartbeat(string serverId)
-        {
+        public override void Heartbeat(string serverId) {
             serverId.ThrowIfNull("serverId");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -329,8 +310,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override int RemoveTimedOutServers(TimeSpan timeOut)
-        {
+        public override int RemoveTimedOutServers(TimeSpan timeOut) {
             if (timeOut.Duration() != timeOut) {
                 throw new ArgumentException("The `timeOut` value must be positive.", "timeOut");
             }
@@ -353,8 +333,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override long GetSetCount(string key)
-        {
+        public override long GetSetCount(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -369,8 +348,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
-        {
+        public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -388,38 +366,34 @@ namespace Hangfire.Raven
             }
         }
 
-        public override TimeSpan GetSetTtl(string key)
-        {
+        public override TimeSpan GetSetTtl(string key) {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenSet), key);
-                var set = repository.Load<RavenSet>(id);
+                var set = session.Load<RavenSet>(id);
 
                 if (set == null) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
 
-                //Could not figure out expiration
-                /*var expireAt = set.
+                var expireAt = session.GetExpiry(set);
 
-                if (expireAt == null) {
+                if (expireAt == default(DateTime)) {
                     return TimeSpan.FromSeconds(-1);
-                }*/
+                }
 
-                //return expireAt.Value - DateTime.UtcNow;
-                return new TimeSpan(5);
+                return expireAt - DateTime.UtcNow;
             }
         }
 
-        public override long GetCounter(string key)
-        {
+        public override long GetCounter(string key) {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(Counter), key);
-                var counter = repository.Load<Counter>(id);
+                var counter = session.Load<Counter>(id);
 
                 if (counter == null) {
                     return 0;
@@ -429,12 +403,11 @@ namespace Hangfire.Raven
             }
         }
 
-        public override long GetHashCount(string key)
-        {
+        public override long GetHashCount(string key) {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession()) {
-                var ravenHash = repository.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
+            using (var session = _storage.Repository.OpenSession()) {
+                var ravenHash = session.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
 
                 if (ravenHash == null) {
                     return 0;
@@ -444,31 +417,28 @@ namespace Hangfire.Raven
             }
         }
 
-        public override TimeSpan GetHashTtl(string key)
-        {
+        public override TimeSpan GetHashTtl(string key) {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession()) {
-                var ravenHash = repository.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
+            using (var session = _storage.Repository.OpenSession()) {
+                var id = _storage.Repository.GetId(typeof(RavenHash), key);
+                var ravenHash = session.Load<RavenHash>(id);
 
                 if (ravenHash == null) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                /* todo Needs to be reworked
-                var expireAt = repository.Advanced.GetExpire(ravenHash);
+                var expireAt = session.GetExpiry(ravenHash);
 
-                if (!expireAt.HasValue) {
+                if (expireAt == default(DateTime)) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                return expireAt.Value - DateTime.UtcNow;*/
-                return new TimeSpan(5);
+                return expireAt - DateTime.UtcNow;
             }
         }
 
-        public override string GetValueFromHash(string key, string name)
-        {
+        public override string GetValueFromHash(string key, string name) {
             key.ThrowIfNull("key");
             name.ThrowIfNull("name");
 
@@ -488,8 +458,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override long GetListCount(string key)
-        {
+        public override long GetListCount(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -504,32 +473,27 @@ namespace Hangfire.Raven
             }
         }
 
-        public override TimeSpan GetListTtl(string key)
-        {
+        public override TimeSpan GetListTtl(string key) {
             key.ThrowIfNull("key");
 
-            using (var repository = _storage.Repository.OpenSession()) {
-                var list = repository.Load<RavenList>(_storage.Repository.GetId(typeof(RavenList), key));
+            using (var session = _storage.Repository.OpenSession()) {
+                var id = _storage.Repository.GetId(typeof(RavenList), key);
+                var list = session.Load<RavenList>(id);
 
                 if (list == null) {
                     return TimeSpan.FromSeconds(-1);
                 }
 
-                //Could not figure out expiration
-                /*
-                var expireAt = repository.Advanced.GetExpire(list);
+                var expireAt = session.GetExpiry(list);
 
-                if (!expireAt.HasValue) {
+                if (expireAt == default(DateTime))
                     return TimeSpan.FromSeconds(-1);
-                }
 
-                return expireAt.Value - DateTime.UtcNow;*/
-                return new TimeSpan(5);
+                return expireAt - DateTime.UtcNow;
             }
         }
 
-        public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
-        {
+        public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
@@ -546,8 +510,7 @@ namespace Hangfire.Raven
             }
         }
 
-        public override List<string> GetAllItemsFromList(string key)
-        {
+        public override List<string> GetAllItemsFromList(string key) {
             key.ThrowIfNull("key");
 
             using (var repository = _storage.Repository.OpenSession()) {
