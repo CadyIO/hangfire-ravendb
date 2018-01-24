@@ -215,9 +215,9 @@ namespace Hangfire.Raven.Storage {
         public JobDetailsDto JobDetails(string jobId) {
             jobId.ThrowIfNull("jobId");
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
-                var job = repository.Load<RavenJob>(id);
+                var job = session.Load<RavenJob>(id);
 
                 if (job == null) {
                     return null;
@@ -233,8 +233,8 @@ namespace Hangfire.Raven.Storage {
             }
         }
         public IList<QueueWithTopEnqueuedJobsDto> Queues() {
-            using (var repository = _storage.Repository.OpenSession()) {
-                var query = repository.Query<JobQueue>().ToList();
+            using (var session = _storage.Repository.OpenSession()) {
+                var query = session.Query<JobQueue>().ToList();
 
                 var results = from item in query
                               group item by item.Queue into g
@@ -276,12 +276,11 @@ namespace Hangfire.Raven.Storage {
             string stateName,
             Func<RavenJob, Job, Dictionary<string, string>, TDto> selector) {
             using (var repository = _storage.Repository.OpenSession()) {
-                var jobs = repository.Query<Hangfire_RavenJobs.Mapping, Hangfire_RavenJobs>()
-                    .Where(a => a.StateName == stateName)
+                var jobs = repository.Query<RavenJob>()
+                    .Where(a => a.StateData.Name == stateName)
                     .OrderByDescending(a => a.CreatedAt)
                     .Skip(from)
                     .Take(count)
-                    .OfType<RavenJob>()
                     .ToList();
 
                 return DeserializeJobs(jobs, selector);
@@ -296,14 +295,14 @@ namespace Hangfire.Raven.Storage {
                     .Select(p => p.Value)
                     .ToList();
 
-                var jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
+                /*var jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
                     .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt != null)
                     .OfType<JobQueue>()
                     .ToDictionary(jobQueue => jobQueue.JobId);
 
-                var filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));
+                var filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));*/
 
-                return DeserializeJobs(filteredJobs, (jsonJob, job, stateData) => new FetchedJobDto {
+                return DeserializeJobs(jobs, (jsonJob, job, stateData) => new FetchedJobDto {
                     Job = job,
                     State = jsonJob.StateData?.Name,
                     FetchedAt = jsonJob.StateData?.Name == ProcessingState.StateName
@@ -321,14 +320,16 @@ namespace Hangfire.Raven.Storage {
                     .Select(p => p.Value)
                     .ToList();
 
-                Dictionary<string, JobQueue> jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
+                
+
+               /* Dictionary<string, JobQueue> jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
                     .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt == null)
                     .OfType<JobQueue>()
-                    .ToDictionary(jobQueue => jobQueue.JobId);
+                    .ToDictionary(jobQueue => jobQueue.JobId);*/
 
-                IEnumerable<RavenJob> filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));
+                //IEnumerable<RavenJob> filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));
 
-                return DeserializeJobs(filteredJobs, (jsonJob, job, stateData) => new EnqueuedJobDto {
+                return DeserializeJobs(jobs, (jsonJob, job, stateData) => new EnqueuedJobDto {
                     Job = job,
                     State = jsonJob.StateData?.Name,
                     EnqueuedAt = jsonJob.StateData?.Name == EnqueuedState.StateName
