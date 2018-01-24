@@ -27,13 +27,10 @@ namespace Hangfire.Raven.JobQueues {
 
         [NotNull]
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken) {
-            queues.ThrowIfNull("queues");
+            queues.ThrowIfNull(nameof(queues));
 
-            if (queues.Length == 0) {
-                throw new ArgumentException("Queue array must be non-empty.", "queues");
-            }
-
-            JobQueue fetchedJob = null;
+            if (queues.Length == 0)
+                throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
             var seconds = DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds);
             var fetchConditions = new Expression<Func<JobQueue, bool>>[]
@@ -47,43 +44,30 @@ namespace Hangfire.Raven.JobQueues {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var fetchCondition = fetchConditions[currentQueryIndex];
-
                 foreach (var queue in queues) {
-                    using (var repository = _storage.Repository.OpenSession()) {
-                        foreach (var job in repository.Query<JobQueue>()
-                            .Where(fetchCondition)
-                            .Where(job => job.Queue == queue)) {
-                            job.FetchedAt = DateTime.UtcNow;
+                    using (var session = _storage.Repository.OpenSession()) {
+                        var query = session.Query<JobQueue>()
+                                .Where(fetchCondition)
+                                .Where(job => job.Queue == queue);
+                        var enumerator = session.Advanced.Stream(query);
 
-                            try {
-                                // Did someone else already picked it up?
-                                repository.Advanced.UseOptimisticConcurrency = true;
-                                repository.SaveChanges();
-
-                                fetchedJob = job;
-                                break;
-                            } catch (ConcurrencyException) {
-                                repository.Advanced.Evict(job); // Avoid subsequent concurrency exceptions
+                        while (enumerator.MoveNext()) {
+                            var job = enumerator.Current.Document;
+                            if (!session.Advanced.HasChanged(job)) {
+                                job.FetchedAt = DateTime.UtcNow;
+                                return new RavenFetchedJob(_storage, job);
                             }
                         }
-                    }
-                    if (fetchedJob != null) {
-                        break;
-                    }
-                }
-
-                if (fetchedJob == null) {
-                    if (currentQueryIndex == fetchConditions.Length - 1) {
-                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
+                if (currentQueryIndex == fetchConditions.Length - 1) {
+                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
-            while (fetchedJob == null);
-
-            return new RavenFetchedJob(_storage, fetchedJob);
+            while (true);
         }
 
         public void Enqueue(string queue, string jobId) {
