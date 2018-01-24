@@ -98,11 +98,15 @@ namespace Hangfire.Raven
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
-            var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
-                Id = id
-            };
+            var set = _session.Load<RavenSet>(id);
 
-            _session.Store(set);
+            if(set == null) {
+                set = new RavenSet() {
+                    Id = id
+                };
+
+                _session.Store(set);
+            }
 
             foreach (var item in items) {
                 set.Scores[item] = 0.0;
@@ -180,11 +184,15 @@ namespace Hangfire.Raven
         {
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
-            var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
-                Id = id
-            };
+            var set = _session.Load<RavenSet>(id);
 
-            _session.Store(set);
+            if (set == null) {
+                set = new RavenSet() {
+                    Id = id
+                };
+
+                _session.Store(set);
+            }
 
             set.Scores[value] = score;
         }
@@ -239,11 +247,15 @@ namespace Hangfire.Raven
         {
             var id = _storage.Repository.GetId(typeof(RavenList), key);
 
-            var list = _session.Load<RavenList>(id) ?? new RavenList() {
-                Id = id
-            };
+            var list = _session.Load<RavenList>(id);
 
-            _session.Store(list);
+            if (list == null) {
+                list = new RavenList() {
+                    Id = id
+                };
+
+                _session.Store(list);
+            }
 
             list.Values.Add(value);
         }
