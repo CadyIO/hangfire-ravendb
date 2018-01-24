@@ -376,11 +376,10 @@ namespace Hangfire.Raven {
 
                 var expireAt = session.GetExpiry(set);
 
-                if (expireAt == default(DateTime)) {
+                if (expireAt == null)
                     return TimeSpan.FromSeconds(-1);
-                }
 
-                return expireAt - DateTime.UtcNow;
+                return (DateTime)expireAt - DateTime.UtcNow;
             }
         }
 
@@ -426,11 +425,10 @@ namespace Hangfire.Raven {
 
                 var expireAt = session.GetExpiry(ravenHash);
 
-                if (expireAt == default(DateTime)) {
+                if (expireAt == null)
                     return TimeSpan.FromSeconds(-1);
-                }
 
-                return expireAt - DateTime.UtcNow;
+                return (DateTime)expireAt - DateTime.UtcNow;
             }
         }
 
@@ -482,10 +480,10 @@ namespace Hangfire.Raven {
 
                 var expireAt = session.GetExpiry(list);
 
-                if (expireAt == default(DateTime))
+                if (expireAt == null)
                     return TimeSpan.FromSeconds(-1);
 
-                return expireAt - DateTime.UtcNow;
+                return (DateTime)expireAt - DateTime.UtcNow;
             }
         }
 

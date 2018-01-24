@@ -11,12 +11,14 @@ namespace Hangfire.Raven.Extensions {
         private static IMetadataDictionary GetMetadata<T>(this IDocumentSession session, T obj) => session.Advanced.GetMetadataFor(obj);
 
         public static void SetExpiry<T>(this IDocumentSession session, string id, TimeSpan expireIn) {
-            var metadata = session.GetMetadata<T>(id);
-            metadata[Constants.Documents.Metadata.Expires] = (DateTime.UtcNow + expireIn).ToString("O");
+            SetExpiry(session.GetMetadata(id), expireIn);
         }
 
         public static void SetExpiry<T>(this IDocumentSession session, T obj, TimeSpan expireIn) {
-            var metadata = session.GetMetadata(obj);
+            SetExpiry(session.GetMetadata(obj), expireIn);
+        }
+
+        private static void SetExpiry(IMetadataDictionary metadata, TimeSpan expireIn) {
             metadata[Constants.Documents.Metadata.Expires] = (DateTime.UtcNow + expireIn).ToString("O");
         }
 
@@ -25,20 +27,19 @@ namespace Hangfire.Raven.Extensions {
             metadata.Remove(Constants.Documents.Metadata.Expires);
         }
 
-        public static DateTime GetExpiry<T>(this IDocumentSession session, string id) {
-            var metadata = session.GetMetadata<T>(id);
-            if (metadata.ContainsKey(id))
-                return (DateTime)metadata[Constants.Documents.Metadata.Expires];
-            else
-                return default(DateTime);
+        public static DateTime? GetExpiry<T>(this IDocumentSession session, string id) {
+            return session.GetExpiry(session.GetMetadata<T>(id));
         }
 
-        public static DateTime GetExpiry<T>(this IDocumentSession session, T obj) {
-            var metadata = session.GetMetadata(obj);
+        public static DateTime? GetExpiry<T>(this IDocumentSession session, T obj) {
+            return session.GetExpiry(session.GetMetadata(obj));
+        }
+
+        private static DateTime? GetExpiry(IMetadataDictionary metadata) {
             if (metadata.ContainsKey(Constants.Documents.Metadata.Expires))
-                return (DateTime)metadata[Constants.Documents.Metadata.Expires];
+                return DateTime.Parse(metadata[Constants.Documents.Metadata.Expires].ToString());
             else
-                return default(DateTime);
+                return null;
         }
     }
 }
