@@ -86,18 +86,6 @@ namespace Hangfire.Raven {
             }
 
             _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
-
-            /*_documentStore
-                .DatabaseCommands
-                .GlobalAdmin
-                .CreateDatabase(new DatabaseDocument {
-                    Id = "Raven/Databases/" + _database,
-                    Settings = {
-                        { "Raven/ActiveBundles", "DocumentExpiration" },
-                        { "Raven/StorageTypeName", "voron" },
-                        { "Raven/DataDir", Path.Combine("~", _database) },
-                    }
-                });*/
         }
 
         public IDocumentSession OpenSession() {

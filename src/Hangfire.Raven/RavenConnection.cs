@@ -24,8 +24,6 @@ using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Server;
 using Hangfire.Storage;
-using static Hangfire.Raven.Entities.RavenJob;
-using Hangfire.Raven.Indexes;
 using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven {
@@ -315,19 +313,17 @@ namespace Hangfire.Raven {
                 throw new ArgumentException("The `timeOut` value must be positive.", "timeOut");
             }
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var heartBeatCutOff = DateTime.UtcNow.Add(timeOut.Negate());
 
-                var results = repository.Query<Hangfire_RavenServers.Mapping, Hangfire_RavenServers>()
+                var results = session.Query<RavenServer>()
                                 .Where(t => t.LastHeartbeat < heartBeatCutOff)
-                                .OfType<RavenServer>()
                                 .ToList();
 
-                foreach (var item in results) {
-                    repository.Delete(item);
-                }
+                foreach (var item in results)
+                    session.Delete(item);
 
-                repository.SaveChanges();
+                session.SaveChanges();
 
                 return results.Count;
             }

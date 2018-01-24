@@ -6,12 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Hangfire.Raven.Samples.AspNetCore
-{
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
+namespace Hangfire.Raven.Samples.AspNetCore {
+    public class Startup {
+        public Startup(IHostingEnvironment env) {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -23,8 +20,7 @@ namespace Hangfire.Raven.Samples.AspNetCore
         public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
+        public void ConfigureServices(IServiceCollection services) {
             // Add framework services.
             services.AddMvc();
 
@@ -36,18 +32,14 @@ namespace Hangfire.Raven.Samples.AspNetCore
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
-            }
-            else
-            {
+            } else {
                 app.UseExceptionHandler("/Home/Error");
             }
 
@@ -62,11 +54,12 @@ namespace Hangfire.Raven.Samples.AspNetCore
 
             BackgroundJob.Enqueue(() => Test());
 
+            BackgroundJob.Schedule(() => System.Console.WriteLine("Scheduled Job: Hello, I am delayed world!"), new System.TimeSpan(0, 1, 0));
+
             // Run every minute
             RecurringJob.AddOrUpdate(() => Test(), Cron.Minutely);
 
-            app.UseMvc(routes =>
-            {
+            app.UseMvc(routes => {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
@@ -76,8 +69,7 @@ namespace Hangfire.Raven.Samples.AspNetCore
         public static int x = 0;
 
         [AutomaticRetry(Attempts = 2, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
-        public static void Test()
-        {
+        public static void Test() {
             Debug.WriteLine($"{x++} Cron Job: Hello, world!");
             //throw new ArgumentException("fail");
         }

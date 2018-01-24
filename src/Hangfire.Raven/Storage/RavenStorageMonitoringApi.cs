@@ -4,7 +4,6 @@ using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Raven.Entities;
-using Hangfire.Raven.Indexes;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
@@ -115,16 +114,15 @@ namespace Hangfire.Raven.Storage {
                     .Take(0)
                     .ToList();
 
-                var recurringJobs = session.Load<RavenSet>("RavenSets/recurring-jobs");
+                var recurringJobs = session.Load<RavenSet>(_storage.Repository.GetId(typeof(RavenSet), "recurring-jobs"));
 
                 var jobs = session.Query<RavenJob>().GroupBy(x => x.StateData.Name).Select(x => new { state = x.Key, count = x.Count() }).ToList();
 
-                var facetJobResults = _storage.GetJobQueueFacets(session, null).Execute();
-                var getJobFacetValues = facetJobResults.Values;
+                var jobQueueCount = session.Query<JobQueue>().Count();
 
                 return new StatisticsDto() {
                     Servers = stat.TotalResults,
-                    Queues = getJobFacetValues.Count(),
+                    Queues = jobQueueCount,
                     Recurring = recurringJobs?.Scores?.Count ?? 0,
                     Succeeded = jobs.FirstOrDefault(a => a.state == SucceededState.StateName)?.count ?? 0,
                     Scheduled = jobs.FirstOrDefault(a => a.state == ScheduledState.StateName)?.count ?? 0,

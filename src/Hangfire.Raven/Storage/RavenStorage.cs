@@ -1,14 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Hangfire.Logging;
-using Hangfire.Raven.Indexes;
 using Hangfire.Raven.JobQueues;
 using Hangfire.Storage;
-using System.Linq.Expressions;
-using Raven.Client.Documents.Session;
-using Raven.Client.Documents.Queries.Facets;
-using Raven.Client.Documents.Linq;
-using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 
 namespace Hangfire.Raven.Storage {
@@ -46,12 +39,6 @@ namespace Hangfire.Raven.Storage {
             _repository = repository;
 
             _repository.Create();
-            _repository.ExecuteIndexes(new List<AbstractIndexCreationTask>()
-            {
-                new Hangfire_RavenJobs(),
-                new Hangfire_JobQueues(),
-                new Hangfire_RavenServers()
-            });
 
             InitializeQueueProviders();
         }
@@ -74,38 +61,6 @@ namespace Hangfire.Raven.Storage {
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for Raven job storage:");
-        }
-
-        public IAggregationQuery<Hangfire_RavenJobs.Mapping> GetRavenJobFacets(
-                    IDocumentSession session,
-                    Expression<Func<Hangfire_RavenJobs.Mapping, bool>> clause)
-        {
-            var query = session.Query<Hangfire_RavenJobs.Mapping, Hangfire_RavenJobs>();
-            if (clause != null)
-                query = query.Where(clause);
-
-            return query.AggregateBy(new[] {
-                new Facet
-                        {
-                            FieldName = "StateName"
-                        }
-                }); ;
-        } 
-
-        public IAggregationQuery<Hangfire_JobQueues.Mapping> GetJobQueueFacets(
-            IDocumentSession session,
-            Expression<Func<Hangfire_JobQueues.Mapping, bool>> clause)
-        {
-            var query = session.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>();
-            if (clause != null)
-                query = query.Where(clause);
-
-            return query.AggregateBy(new[] {
-                new Facet
-                        {
-                            FieldName = "Queue"
-                        }
-                });
         }
 
         private void InitializeQueueProviders()
