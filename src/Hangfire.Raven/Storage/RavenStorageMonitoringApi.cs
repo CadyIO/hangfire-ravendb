@@ -10,6 +10,7 @@ using Hangfire.Storage.Monitoring;
 using Hangfire.Raven.JobQueues;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Linq;
+using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven.Storage {
     public class RavenStorageMonitoringApi
@@ -221,7 +222,7 @@ namespace Hangfire.Raven.Storage {
 
                 return new JobDetailsDto {
                     CreatedAt = job.CreatedAt,
-                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                    ExpireAt = session.GetExpiry(job),
                     Job = DeserializeJob(job.InvocationData),
                     History = job.History,
                     Properties = job.Parameters
