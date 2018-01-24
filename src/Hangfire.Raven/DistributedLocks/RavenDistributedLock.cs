@@ -6,6 +6,7 @@ using Hangfire.Raven.Storage;
 using Hangfire.Logging;
 using Hangfire.Storage;
 using Raven.Client.Exceptions;
+using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven.DistributedLocks {
     public class RavenDistributedLock : IDisposable
@@ -113,7 +114,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         };
 
                         session.Store(_distributedLock);
-                        //session.Advanced.AddExpire(_distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
+                        session.SetExpiry(_distributedLock, _options.DistributedLockLifetime);
 
                         try
                         {
