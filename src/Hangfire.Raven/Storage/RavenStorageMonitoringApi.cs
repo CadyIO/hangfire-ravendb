@@ -52,9 +52,8 @@ namespace Hangfire.Raven.Storage {
             return GetNumberOfJobsByStateName(SucceededState.StateName);
         }
         private long GetNumberOfJobsByStateName(string stateName) {
-            using (var repository = _storage.Repository.OpenSession()) {
-                var facetResults = _storage.GetRavenJobFacets(repository, a => a.StateName == stateName).Execute();
-                return facetResults.Count();
+            using (var session = _storage.Repository.OpenSession()) {
+                return session.Query<RavenJob>().Count(x => x.StateData.Name == stateName);
             }
         }
 
@@ -110,30 +109,29 @@ namespace Hangfire.Raven.Storage {
             return stats;
         }
         public StatisticsDto GetStatistics() {
-            using (var transaction = _storage.Repository.OpenSession()) {
-                transaction.Query<RavenServer>()
+            using (var session = _storage.Repository.OpenSession()) {
+                session.Query<RavenServer>()
                     .Statistics(out QueryStatistics stat)
                     .Take(0)
                     .ToList();
 
-                var recurringJobs = transaction.Load<RavenSet>("RavenSets/recurring-jobs");
+                var recurringJobs = session.Load<RavenSet>("RavenSets/recurring-jobs");
 
-                var facetResults = _storage.GetRavenJobFacets(transaction, null).Execute();
-                var getFacetValues = facetResults.Values;
+                var jobs = session.Query<RavenJob>().GroupBy(x => x.StateData.Name).Select(x => new { state = x.Key, count = x.Count() }).ToList();
 
-                var facetJobResults = _storage.GetJobQueueFacets(transaction, null).Execute();
+                var facetJobResults = _storage.GetJobQueueFacets(session, null).Execute();
                 var getJobFacetValues = facetJobResults.Values;
 
                 return new StatisticsDto() {
                     Servers = stat.TotalResults,
                     Queues = getJobFacetValues.Count(),
                     Recurring = recurringJobs?.Scores?.Count ?? 0,
-                    Succeeded = getFacetValues.FirstOrDefault(a => a.Name == SucceededState.StateName)?.RemainingHits ?? 0,
-                    Scheduled = getFacetValues.FirstOrDefault(a => a.Name == ScheduledState.StateName)?.RemainingHits ?? 0,
-                    Enqueued = getFacetValues.FirstOrDefault(a => a.Name == EnqueuedState.StateName)?.RemainingHits ?? 0,
-                    Failed = getFacetValues.FirstOrDefault(a => a.Name == FailedState.StateName)?.RemainingHits ?? 0,
-                    Processing = getFacetValues.FirstOrDefault(a => a.Name == ProcessingState.StateName)?.RemainingHits ?? 0,
-                    Deleted = getFacetValues.FirstOrDefault(a => a.Name == DeletedState.StateName)?.RemainingHits ?? 0,
+                    Succeeded = jobs.FirstOrDefault(a => a.state == SucceededState.StateName)?.count ?? 0,
+                    Scheduled = jobs.FirstOrDefault(a => a.state == ScheduledState.StateName)?.count ?? 0,
+                    Enqueued = jobs.FirstOrDefault(a => a.state == EnqueuedState.StateName)?.count ?? 0,
+                    Failed = jobs.FirstOrDefault(a => a.state == FailedState.StateName)?.count ?? 0,
+                    Processing = jobs.FirstOrDefault(a => a.state == ProcessingState.StateName)?.count ?? 0,
+                    Deleted = jobs.FirstOrDefault(a => a.state == DeletedState.StateName)?.count ?? 0,
                 };
             }
         }
@@ -320,12 +318,12 @@ namespace Hangfire.Raven.Storage {
                     .Select(p => p.Value)
                     .ToList();
 
-                
 
-               /* Dictionary<string, JobQueue> jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt == null)
-                    .OfType<JobQueue>()
-                    .ToDictionary(jobQueue => jobQueue.JobId);*/
+
+                /* Dictionary<string, JobQueue> jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
+                     .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt == null)
+                     .OfType<JobQueue>()
+                     .ToDictionary(jobQueue => jobQueue.JobId);*/
 
                 //IEnumerable<RavenJob> filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));
 
