@@ -34,7 +34,7 @@ namespace Hangfire.Raven.Extensions {
         }
 
         public static DateTime GetExpiry<T>(this IDocumentSession session, T obj) {
-            var metadata = GetMetadata(obj);
+            var metadata = session.GetMetadata(obj);
             if (metadata.ContainsKey(Constants.Documents.Metadata.Expires))
                 return (DateTime)metadata[Constants.Documents.Metadata.Expires];
             else
