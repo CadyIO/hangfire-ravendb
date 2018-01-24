@@ -32,13 +32,13 @@ namespace Hangfire.Raven.Entities
 
         public void RemoveFromQueue()
         {
-            using (var repository = _storage.Repository.OpenSession()) {
-                var job = repository.Load<JobQueue>(Id);
+            using (var session = _storage.Repository.OpenSession()) {
+                var job = session.Load<JobQueue>(Id);
 
                 if (job != null) {
-                    repository.Delete(job);
+                    session.Delete(job);
+                    session.SaveChanges();
                 }
-                repository.SaveChanges();
             }
 
             _removedFromQueue = true;

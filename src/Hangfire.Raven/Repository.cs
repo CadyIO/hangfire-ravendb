@@ -9,6 +9,7 @@ using Raven.Client.Documents.Queries.Facets;
 using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Indexes;
+using Raven.Client.Documents.Operations;
 
 namespace Hangfire.Raven {
     public class RepositoryConfig {
@@ -118,6 +119,8 @@ namespace Hangfire.Raven {
         IAsyncDocumentSession IRepository.OpenAsyncSession() => _documentStore.OpenAsyncSession();
 
         IDocumentSession IRepository.OpenSession() => _documentStore.OpenSession();
+
+        OperationExecutor IRepository.GetOperationExecutor() => _documentStore.Operations;
 
         public string GetId(Type type, params string[] id) => type.ToString() + '/' + string.Join("/", id);
     }
