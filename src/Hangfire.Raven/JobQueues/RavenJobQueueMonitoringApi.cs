@@ -23,7 +23,6 @@ namespace Hangfire.Raven.JobQueues {
             using (var repository = _storage.Repository.OpenSession()) {
                 return repository.Query<JobQueue>()
                     .Select(x => x.Queue)
-                    .Distinct()
                     .ToList();
             }
         }
@@ -37,12 +36,6 @@ namespace Hangfire.Raven.JobQueues {
                     .Skip(pageFrom)
                     .Take(perPage)
                     .Select(a => a.JobId)
-                    .ToList()
-                    .Where(jobId =>
-                    {
-                        var job = repository.Load<RavenJob>(_storage.Repository.GetId(typeof(RavenJob), jobId));
-                        return (job != null) && (job.StateData != null);
-                    })
                     .ToList();
             }
         }
@@ -56,12 +49,6 @@ namespace Hangfire.Raven.JobQueues {
                     .Skip(pageFrom)
                     .Take(perPage)
                     .Select(a => a.JobId)
-                    .ToList()
-                    .Where(jobId =>
-                    {
-                        var job = repository.Load<RavenJob>(_storage.Repository.GetId(typeof(RavenJob), jobId));
-                        return job != null;
-                    })
                     .ToList();
             }
         }
