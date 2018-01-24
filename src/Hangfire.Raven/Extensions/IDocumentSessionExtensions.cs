@@ -6,16 +6,16 @@ using System.Text;
 
 namespace Hangfire.Raven.Extensions {
     public static class IDocumentSessionExtensions {
-        private static IMetadataDictionary GetMetadata<T>(this IDocumentSession session, string id) => session.Advanced.GetMetadataFor(session.Load<T>(id));
+        private static IMetadataDictionary GetMetadataForId<T>(this IDocumentSession session, string id) => session.Advanced.GetMetadataFor(session.Load<T>(id));
 
-        private static IMetadataDictionary GetMetadata<T>(this IDocumentSession session, T obj) => session.Advanced.GetMetadataFor(obj);
+        private static IMetadataDictionary GetMetadataForObject<T>(this IDocumentSession session, T obj) => session.Advanced.GetMetadataFor(obj);
 
         public static void SetExpiry<T>(this IDocumentSession session, string id, TimeSpan expireIn) {
-            SetExpiry(session.GetMetadata(id), expireIn);
+            SetExpiry(session.GetMetadataForId<T>(id), expireIn);
         }
 
         public static void SetExpiry<T>(this IDocumentSession session, T obj, TimeSpan expireIn) {
-            SetExpiry(session.GetMetadata(obj), expireIn);
+            SetExpiry(session.GetMetadataForObject(obj), expireIn);
         }
 
         private static void SetExpiry(IMetadataDictionary metadata, TimeSpan expireIn) {
@@ -23,16 +23,16 @@ namespace Hangfire.Raven.Extensions {
         }
 
         public static void RemoveExpiry<T>(this IDocumentSession session, string id) {
-            var metadata = session.GetMetadata<T>(id);
+            var metadata = session.GetMetadataForId<T>(id);
             metadata.Remove(Constants.Documents.Metadata.Expires);
         }
 
         public static DateTime? GetExpiry<T>(this IDocumentSession session, string id) {
-            return session.GetExpiry(session.GetMetadata<T>(id));
+            return GetExpiry(session.GetMetadataForId<T>(id));
         }
 
         public static DateTime? GetExpiry<T>(this IDocumentSession session, T obj) {
-            return session.GetExpiry(session.GetMetadata(obj));
+            return GetExpiry(session.GetMetadataForObject(obj));
         }
 
         private static DateTime? GetExpiry(IMetadataDictionary metadata) {
