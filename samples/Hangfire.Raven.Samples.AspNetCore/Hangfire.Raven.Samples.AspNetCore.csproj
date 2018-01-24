@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <Version>3.2.0</Version>
     <AssemblyVersion>3.2.0.0</AssemblyVersion>
     <FileVersion>3.2.0.0</FileVersion>
@@ -16,12 +16,11 @@
     <PackageTags>Hangfire;AspNet;MVC;OWIN;RavenDB;Long-Running;Background;Fire-And-Forget;Delayed;Recurring;Tasks;Jobs;Scheduler;Threading;Queues</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/CadyIO/hangfire-ravendb</RepositoryUrl>
+    <StartupObject>Hangfire.Raven.Samples.AspNetCore.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.6.17" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
