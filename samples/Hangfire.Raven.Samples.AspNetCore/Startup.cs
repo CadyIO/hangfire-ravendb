@@ -47,7 +47,7 @@ namespace Hangfire.Raven.Samples.AspNetCore {
             app.UseStaticFiles();
 
             // Add Hangfire Server and Dashboard support
-            app.UseHangfireServer(new BackgroundJobServerOptions() { Queues = new[] { "Default", "Testing" } });
+            app.UseHangfireServer(new BackgroundJobServerOptions() { Queues = new[] { "default", "testing" }, WorkerCount = 1 });
             app.UseHangfireDashboard();
 
             // Run once
