@@ -8,6 +8,7 @@ using Hangfire.Storage;
 using Hangfire.Logging;
 using System.Linq.Expressions;
 using Raven.Client.Exceptions;
+using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven.JobQueues {
     public class RavenJobQueue : IPersistentJobQueue {
@@ -32,11 +33,10 @@ namespace Hangfire.Raven.JobQueues {
             if (queues.Length == 0)
                 throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            var seconds = DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds);
             var fetchConditions = new Expression<Func<JobQueue, bool>>[]
             {
                 job => job.FetchedAt == null,
-                job => job.FetchedAt < seconds
+                job => job.FetchedAt < DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds)
             };
             var currentQueryIndex = 0;
 
@@ -44,18 +44,21 @@ namespace Hangfire.Raven.JobQueues {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var fetchCondition = fetchConditions[currentQueryIndex];
-                foreach (var queue in queues) {
-                    using (var session = _storage.Repository.OpenSession()) {
-                        var query = session.Query<JobQueue>()
-                                .Where(fetchCondition)
-                                .Where(job => job.Queue == queue);
-                        var enumerator = session.Advanced.Stream(query);
+                using (var session = _storage.Repository.OpenSession()) {
+                    session.Advanced.UseOptimisticConcurrency = true;
+                    foreach (var queue in queues) {
+                        var job = session.Query<JobQueue>()
+                                .Where(fetchCondition.Compile())
+                                .Where(j => j.Queue == queue)
+                                .FirstOrDefault();
 
-                        while (enumerator.MoveNext()) {
-                            var job = enumerator.Current.Document;
-                            if (!session.Advanced.HasChanged(job)) {
+                        if(job != null) {
+                            try {
                                 job.FetchedAt = DateTime.UtcNow;
+                                session.SaveChanges();
                                 return new RavenFetchedJob(_storage, job);
+                            } catch(ConcurrencyException) {
+
                             }
                         }
                     }
@@ -71,15 +74,15 @@ namespace Hangfire.Raven.JobQueues {
         }
 
         public void Enqueue(string queue, string jobId) {
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var jobQueue = new JobQueue {
                     Id = _storage.Repository.GetId(typeof(JobQueue), queue, jobId),
                     JobId = jobId,
                     Queue = queue
                 };
 
-                repository.Store(jobQueue);
-                repository.SaveChanges();
+                session.Store(jobQueue);
+                session.SaveChangesWithRetry();
             }
         }
     }
