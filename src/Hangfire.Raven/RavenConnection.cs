@@ -330,7 +330,7 @@ namespace Hangfire.Raven {
         }
 
         public override long GetSetCount(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenSet), key);
@@ -345,7 +345,7 @@ namespace Hangfire.Raven {
         }
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenSet), key);
@@ -363,7 +363,7 @@ namespace Hangfire.Raven {
         }
 
         public override TimeSpan GetSetTtl(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenSet), key);
@@ -384,7 +384,7 @@ namespace Hangfire.Raven {
         }
 
         public override long GetCounter(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(Counter), key);
@@ -399,7 +399,7 @@ namespace Hangfire.Raven {
         }
 
         public override long GetHashCount(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var ravenHash = session.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
@@ -413,7 +413,7 @@ namespace Hangfire.Raven {
         }
 
         public override TimeSpan GetHashTtl(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenHash), key);
@@ -433,8 +433,8 @@ namespace Hangfire.Raven {
         }
 
         public override string GetValueFromHash(string key, string name) {
-            key.ThrowIfNull("key");
-            name.ThrowIfNull("name");
+            key.ThrowIfNull(nameof(key));
+            name.ThrowIfNull(nameof(name));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var ravenHash = repository.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
@@ -453,7 +453,7 @@ namespace Hangfire.Raven {
         }
 
         public override long GetListCount(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenList), key);
@@ -468,7 +468,7 @@ namespace Hangfire.Raven {
         }
 
         public override TimeSpan GetListTtl(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenList), key);
@@ -488,7 +488,7 @@ namespace Hangfire.Raven {
         }
 
         public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenList), key);
@@ -505,7 +505,7 @@ namespace Hangfire.Raven {
         }
 
         public override List<string> GetAllItemsFromList(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenList), key);
