@@ -41,11 +41,7 @@ namespace Hangfire.Raven {
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) => new RavenDistributedLock(_storage, $"HangFire/{resource}", timeout, _storage.Options);
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken) {
-            queues.ThrowIfNull(nameof(queues));
-
-            if (queues.Length == 0) {
-                throw new ArgumentNullException(nameof(queues));
-            }
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException(nameof(queues));
 
             var providers = queues
                 .Select(queue => _storage.QueueProviders.GetProvider(queue))
@@ -53,13 +49,11 @@ namespace Hangfire.Raven {
                 .ToArray();
 
             if (providers.Length != 1) {
-                throw new InvalidOperationException(string.Format(
-                    "Multiple provider instances registered for queues: {0}. You should choose only one type of persistent queues per server instance.",
-                    string.Join(", ", queues)));
+                throw new InvalidOperationException(
+                    $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
             }
 
             var persistentQueue = providers[0].GetJobQueue();
-
             return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
@@ -71,23 +65,19 @@ namespace Hangfire.Raven {
             job.ThrowIfNull(nameof(job));
             parameters.ThrowIfNull(nameof(parameters));
 
+            var invocationData = InvocationData.Serialize(job);
+            var guid = Guid.NewGuid().ToString();
+            var ravenJob = new RavenJob {
+                Id = _storage.Repository.GetId(typeof(RavenJob), guid),
+                InvocationData = invocationData,
+                CreatedAt = createdAt,
+                Parameters = parameters
+            };
+
             using (var session = _storage.Repository.OpenSession()) {
-                var invocationData = InvocationData.Serialize(job);
-
-                var guid = Guid.NewGuid().ToString();
-
-                var ravenJob = new RavenJob {
-                    Id = _storage.Repository.GetId(typeof(RavenJob), guid),
-                    InvocationData = invocationData,
-                    CreatedAt = createdAt,
-                    Parameters = parameters
-                };
-
                 session.Store(ravenJob);
                 session.SetExpiry(ravenJob, createdAt + expireIn);
-
                 session.SaveChanges();
-
                 return guid;
             }
         }
@@ -99,9 +89,7 @@ namespace Hangfire.Raven {
                 var id = _storage.Repository.GetId(typeof(RavenJob), key);
                 var jobData = repository.Load<RavenJob>(id);
 
-                if (jobData == null) {
-                    return null;
-                }
+                if (jobData == null) return null;
 
                 Job job = null;
                 JobLoadException loadException = null;

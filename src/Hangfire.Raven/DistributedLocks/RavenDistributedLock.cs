@@ -15,6 +15,8 @@ namespace Hangfire.Raven.DistributedLocks {
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
                     = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>());
 
+        private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
+
         private RavenStorage _storage;
 
         private string _resource;
@@ -55,20 +57,15 @@ namespace Hangfire.Raven.DistributedLocks {
         }
 
         public void Dispose() {
-            if (_completed) {
-                return;
-            }
+            if (_completed) return;
+
             _completed = true;
 
-            if (!AcquiredLocks.Value.ContainsKey(_resource)) {
-                return;
-            }
+            if (!AcquiredLocks.Value.ContainsKey(_resource)) return;
 
             AcquiredLocks.Value[_resource]--;
 
-            if (AcquiredLocks.Value[_resource] > 0) {
-                return;
-            }
+            if (AcquiredLocks.Value[_resource] > 0) return;
 
             lock (_lockObject) {
                 AcquiredLocks.Value.Remove(_resource);
@@ -84,12 +81,10 @@ namespace Hangfire.Raven.DistributedLocks {
 
         private void Acquire(TimeSpan timeout) {
             try {
-                var now = DateTime.Now;
-                var lockTimeoutTime = now.Add(timeout);
-                var waitFor = (int)(timeout.TotalMilliseconds > 10000 ? 1000 : timeout.TotalMilliseconds / 5);
+                var lockTimeoutTime = DateTime.Now.Add(timeout);
+                var waitFor = (int)(timeout.TotalMilliseconds > 10000 ? 2000 : timeout.TotalMilliseconds / 5);
 
-
-                while (lockTimeoutTime >= now) {
+                while (lockTimeoutTime >= DateTime.Now) {
                     _distributedLock = new DistributedLock() {
                         ClientId = _storage.Options.ClientId,
                         Resource = _resource
@@ -113,7 +108,6 @@ namespace Hangfire.Raven.DistributedLocks {
                             } catch (PlatformNotSupportedException) {
                                 Thread.Sleep(waitFor);
                             }
-                            now = DateTime.Now;
                         }
                     }
                 }
@@ -149,8 +143,6 @@ namespace Hangfire.Raven.DistributedLocks {
         private void StartHeartBeat() {
             Logger.InfoFormat(".Starting heartbeat for resource: {0}", _resource);
 
-            TimeSpan timerInterval = TimeSpan.FromMilliseconds(_options.DistributedLockLifetime.TotalMilliseconds / 5);
-
             _heartbeatTimer = new Timer(state => {
                 lock (_lockObject) {
                     try {
@@ -165,7 +157,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         Release();
                     }
                 }
-            }, null, timerInterval, timerInterval);
+            }, null, KeepAliveInterval, KeepAliveInterval);
         }
     }
 }
