@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Hangfire.Raven.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -46,7 +47,7 @@ namespace Hangfire.Raven.Samples.AspNetCore {
             app.UseStaticFiles();
 
             // Add Hangfire Server and Dashboard support
-            app.UseHangfireServer();
+            app.UseHangfireServer(new BackgroundJobServerOptions() { Queues = new[] { "Default", "Testing" } });
             app.UseHangfireDashboard();
 
             // Run once
@@ -58,6 +59,10 @@ namespace Hangfire.Raven.Samples.AspNetCore {
 
             // Run every minute
             RecurringJob.AddOrUpdate(() => Test(), Cron.Minutely);
+
+            Task.Run(() => {
+                for (int i = 0; i < 100; i++)
+                    BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello stressed world!"));
 
             app.UseMvc(routes => {
                 routes.MapRoute(
