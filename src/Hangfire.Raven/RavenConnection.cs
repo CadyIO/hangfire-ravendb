@@ -38,13 +38,13 @@ namespace Hangfire.Raven {
 
         public override IWriteOnlyTransaction CreateWriteTransaction() => new RavenWriteOnlyTransaction(_storage);
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) => new RavenDistributedLock(_storage, string.Format("HangFire/{0}", resource), timeout, _storage.Options);
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) => new RavenDistributedLock(_storage, $"HangFire/{resource}", timeout, _storage.Options);
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken) {
-            queues.ThrowIfNull("queues");
+            queues.ThrowIfNull(nameof(queues));
 
             if (queues.Length == 0) {
-                throw new ArgumentNullException("queues");
+                throw new ArgumentNullException(nameof(queues));
             }
 
             var providers = queues
@@ -68,8 +68,8 @@ namespace Hangfire.Raven {
             IDictionary<string, string> parameters,
             DateTime createdAt,
             TimeSpan expireIn) {
-            job.ThrowIfNull("job");
-            parameters.ThrowIfNull("parameters");
+            job.ThrowIfNull(nameof(job));
+            parameters.ThrowIfNull(nameof(parameters));
 
             using (var session = _storage.Repository.OpenSession()) {
                 var invocationData = InvocationData.Serialize(job);
@@ -93,7 +93,7 @@ namespace Hangfire.Raven {
         }
 
         public override JobData GetJobData(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenJob), key);
@@ -122,7 +122,7 @@ namespace Hangfire.Raven {
         }
 
         public override StateData GetStateData(string jobId) {
-            jobId.ThrowIfNull("jobId");
+            jobId.ThrowIfNull(nameof(jobId));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
@@ -137,8 +137,8 @@ namespace Hangfire.Raven {
         }
 
         public override void SetJobParameter(string jobId, string name, string value) {
-            jobId.ThrowIfNull("jobId");
-            name.ThrowIfNull("name");
+            jobId.ThrowIfNull(nameof(jobId));
+            name.ThrowIfNull(nameof(name));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
@@ -151,8 +151,8 @@ namespace Hangfire.Raven {
         }
 
         public override string GetJobParameter(string jobId, string name) {
-            jobId.ThrowIfNull("jobId");
-            name.ThrowIfNull("name");
+            jobId.ThrowIfNull(nameof(jobId));
+            name.ThrowIfNull(nameof(name));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
@@ -179,7 +179,7 @@ namespace Hangfire.Raven {
         }
 
         public override HashSet<string> GetAllItemsFromSet(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenSet), key);
@@ -194,7 +194,7 @@ namespace Hangfire.Raven {
         }
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             if (toScore < fromScore) {
                 throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
@@ -213,7 +213,7 @@ namespace Hangfire.Raven {
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
             keyValuePairs.ThrowIfNull("keyValuePairs");
 
             using (var repository = _storage.Repository.OpenSession()) {
