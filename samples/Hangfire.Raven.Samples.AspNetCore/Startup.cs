@@ -60,9 +60,11 @@ namespace Hangfire.Raven.Samples.AspNetCore {
             // Run every minute
             RecurringJob.AddOrUpdate(() => Test(), Cron.Minutely);
 
+            
             Task.Run(() => {
                 for (int i = 0; i < 100; i++)
                     BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello stressed world!"));
+            });
 
             app.UseMvc(routes => {
                 routes.MapRoute(
