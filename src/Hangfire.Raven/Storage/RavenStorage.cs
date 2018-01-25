@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Hangfire.Logging;
+using Hangfire.Raven.Extensions;
 using Hangfire.Raven.JobQueues;
 using Hangfire.Storage;
 using Raven.Client.Documents.Indexes;

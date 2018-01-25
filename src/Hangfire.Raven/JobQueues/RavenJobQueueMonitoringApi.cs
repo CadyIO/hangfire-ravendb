@@ -2,6 +2,7 @@
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
+using Hangfire.Raven.Extensions;
 using Hangfire.Raven.Storage;
 using Raven.Client.Documents.Linq;
 

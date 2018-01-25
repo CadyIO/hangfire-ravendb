@@ -1,4 +1,5 @@
 ﻿using System;
+using Hangfire.Raven.Extensions;
 using Raven.Client.Documents.Session;
 
 namespace Hangfire.Raven.Storage {
