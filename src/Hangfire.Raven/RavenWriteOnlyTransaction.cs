@@ -13,6 +13,8 @@ using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client;
 using Hangfire.Raven.Extensions;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Hangfire.Raven {
     public class RavenWriteOnlyTransaction
@@ -33,20 +35,16 @@ namespace Hangfire.Raven {
         }
 
         public override void Commit() {
+            var toPatch = _patchRequests.ToLookup(a => a.Key, a => a.Value);
+            foreach (var item in toPatch)
+                foreach (var patch in item.Select(x => new PatchCommandData(item.Key, null, x, null)))
+                    _session.Advanced.Defer(patch);
+
             try {
                 _session.SaveChanges();
                 _session.Dispose();
-
-                var toPatch = _patchRequests.ToLookup(a => a.Key, a => a.Value);
-
-                var executor = _storage.Repository.GetOperationExecutor();
-                foreach (var item in toPatch)
-                    foreach (var patch in item.Select(x => new PatchOperation(item.Key, null, x)))
-                        executor.Send(patch);
-
             } catch {
                 Logger.Error("- Concurrency exception");
-
                 throw;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using Hangfire.Annotations;
+using Hangfire.Raven.Extensions;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage;
 
@@ -50,9 +51,6 @@ namespace Hangfire.Raven.Entities
                 var job = repository.Load<JobQueue>(Id);
 
                 job.FetchedAt = null;
-
-                repository.Store(job);
-                repository.SaveChanges();
             }
 
             _requeued = true;

@@ -86,29 +86,32 @@ namespace Hangfire.Raven.DistributedLocks {
             try {
                 var now = DateTime.Now;
                 var lockTimeoutTime = now.Add(timeout);
+                var waitFor = (int)(timeout.TotalMilliseconds > 10000 ? 1000 : timeout.TotalMilliseconds / 5);
+
 
                 while (lockTimeoutTime >= now) {
+                    _distributedLock = new DistributedLock() {
+                        ClientId = _storage.Options.ClientId,
+                        Resource = _resource
+                    };
+
                     using (var session = _storage.Repository.OpenSession()) {
-                        _distributedLock = new DistributedLock() {
-                            ClientId = _storage.Options.ClientId,
-                            Resource = _resource
-                        };
+                        session.Advanced.UseOptimisticConcurrency = true;
 
                         session.Store(_distributedLock);
                         session.SetExpiry(_distributedLock, _options.DistributedLockLifetime);
 
                         try {
-                            // Blocking session!
-                            session.Advanced.UseOptimisticConcurrency = true;
+                            // Blocking session!                 
                             session.SaveChanges();
                             return;
                         } catch (ConcurrencyException) {
                             _distributedLock = null;
                             try {
                                 var eventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, EventWaitHandleName);
-                                eventWaitHandle.WaitOne((int)timeout.TotalMilliseconds / 10);
+                                eventWaitHandle.WaitOne(waitFor);
                             } catch (PlatformNotSupportedException) {
-                                Thread.Sleep((int)timeout.TotalMilliseconds / 10);
+                                Thread.Sleep(waitFor);
                             }
                             now = DateTime.Now;
                         }
@@ -154,9 +157,7 @@ namespace Hangfire.Raven.DistributedLocks {
                         Logger.InfoFormat("..Heartbeat for resource {0}", _resource);
 
                         using (var session = _storage.Repository.OpenSession()) {
-                            var distributedLock = session.Load<DistributedLock>(_distributedLock.Id);
-
-                            //session.Advanced.AddExpire(distributedLock, DateTime.UtcNow.Add(_options.DistributedLockLifetime));
+                            session.SetExpiry(_distributedLock.Id, _options.DistributedLockLifetime);
                             session.SaveChanges();
                         }
                     } catch (Exception ex) {

@@ -292,13 +292,6 @@ namespace Hangfire.Raven.Storage {
                     .Select(p => p.Value)
                     .ToList();
 
-                /*var jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                    .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt != null)
-                    .OfType<JobQueue>()
-                    .ToDictionary(jobQueue => jobQueue.JobId);
-
-                var filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));*/
-
                 return DeserializeJobs(jobs, (jsonJob, job, stateData) => new FetchedJobDto {
                     Job = job,
                     State = jsonJob.StateData?.Name,
@@ -316,15 +309,6 @@ namespace Hangfire.Raven.Storage {
                     .Where(a => a.Value != null)
                     .Select(p => p.Value)
                     .ToList();
-
-
-
-                /* Dictionary<string, JobQueue> jobIdToJobQueueMap = repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                     .Where(a => a.JobId.In(jobs.Select(job => job.Id.Split(new char[] { '/' }, 2)[1])) && a.FetchedAt == null)
-                     .OfType<JobQueue>()
-                     .ToDictionary(jobQueue => jobQueue.JobId);*/
-
-                //IEnumerable<RavenJob> filteredJobs = jobs.Where(job => jobIdToJobQueueMap.ContainsKey(job.Id.Split(new char[] { '/' }, 2)[1]));
 
                 return DeserializeJobs(jobs, (jsonJob, job, stateData) => new EnqueuedJobDto {
                     Job = job,

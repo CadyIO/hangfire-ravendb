@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hangfire.Raven.Extensions;
-using System.IO;
 using Raven.Client.Documents;
 using Raven.Client.ServerWide.Operations;
 using Raven.Client.ServerWide;
-using Raven.Client.Documents.Queries.Facets;
-using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
@@ -88,23 +85,7 @@ namespace Hangfire.Raven {
             _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
         }
 
-        public IDocumentSession OpenSession() {
-            return _documentStore.OpenSession(_database);
-        }
-
-        public IAsyncDocumentSession OpenAsyncSession() {
-            return _documentStore.OpenAsyncSession(_database);
-        }
-
-        public void Dispose() {
-            _documentStore.Dispose();
-        }
-
-        IList<FacetResult> IRepository.GetFacets(string index, IndexQuery query, List<Facet> facets) {
-            throw new NotImplementedException();
-        }
-
-        IAsyncDocumentSession IRepository.OpenAsyncSession() => _documentStore.OpenAsyncSession();
+        public void Dispose() => _documentStore.Dispose();
 
         IDocumentSession IRepository.OpenSession() => _documentStore.OpenSession();
 

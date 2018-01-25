@@ -71,7 +71,7 @@ namespace Hangfire.Raven {
             job.ThrowIfNull("job");
             parameters.ThrowIfNull("parameters");
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var invocationData = InvocationData.Serialize(job);
 
                 var guid = Guid.NewGuid().ToString();
@@ -83,10 +83,10 @@ namespace Hangfire.Raven {
                     Parameters = parameters
                 };
 
-                repository.Store(ravenJob);
-                //repository.Advanced.AddExpire(ravenJob, createdAt + expireIn);
+                session.Store(ravenJob);
+                session.SetExpiry(ravenJob, createdAt + expireIn);
 
-                repository.SaveChanges();
+                session.SaveChanges();
 
                 return guid;
             }
@@ -237,7 +237,7 @@ namespace Hangfire.Raven {
         }
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key) {
-            key.ThrowIfNull("key");
+            key.ThrowIfNull(nameof(key));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var result = repository.Load<RavenHash>(_storage.Repository.GetId(typeof(RavenHash), key));
@@ -247,8 +247,8 @@ namespace Hangfire.Raven {
         }
 
         public override void AnnounceServer(string serverId, ServerContext context) {
-            serverId.ThrowIfNull("serverId");
-            context.ThrowIfNull("context");
+            serverId.ThrowIfNull(nameof(serverId));
+            context.ThrowIfNull(nameof(context));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenServer), serverId);
@@ -276,7 +276,7 @@ namespace Hangfire.Raven {
         }
 
         public override void RemoveServer(string serverId) {
-            serverId.ThrowIfNull("serverId");
+            serverId.ThrowIfNull(nameof(serverId));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenServer), serverId);
@@ -288,7 +288,7 @@ namespace Hangfire.Raven {
         }
 
         public override void Heartbeat(string serverId) {
-            serverId.ThrowIfNull("serverId");
+            serverId.ThrowIfNull(nameof(serverId));
 
             using (var repository = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenServer), serverId);

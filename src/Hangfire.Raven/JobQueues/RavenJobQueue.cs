@@ -82,7 +82,7 @@ namespace Hangfire.Raven.JobQueues {
                 };
 
                 session.Store(jobQueue);
-                session.SaveChangesWithRetry();
+                session.SaveChanges();
             }
         }
     }

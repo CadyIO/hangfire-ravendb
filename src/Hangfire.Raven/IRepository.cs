@@ -13,9 +13,7 @@ namespace Hangfire.Raven {
         void Create();
         void Destroy();
         void ExecuteIndexes(List<AbstractIndexCreationTask> indexes);
-        IList<FacetResult> GetFacets(string index, IndexQuery query, List<Facet> facets);
         string GetId(Type type, params string[] id);
-        IAsyncDocumentSession OpenAsyncSession();
         IDocumentSession OpenSession();
         OperationExecutor GetOperationExecutor();
     }

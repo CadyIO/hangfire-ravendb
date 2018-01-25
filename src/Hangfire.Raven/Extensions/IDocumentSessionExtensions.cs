@@ -1,5 +1,6 @@
 ﻿using Raven.Client;
 using Raven.Client.Documents.Session;
+using Raven.Client.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,6 +17,14 @@ namespace Hangfire.Raven.Extensions {
 
         public static void SetExpiry<T>(this IDocumentSession session, T obj, TimeSpan expireIn) {
             SetExpiry(session.GetMetadataForObject(obj), expireIn);
+        }
+
+        public static void SetExpiry<T>(this IDocumentSession session, T obj, DateTime expireAt) {
+            SetExpiry(session.GetMetadataForObject(obj), expireAt);
+        }
+
+        private static void SetExpiry(IMetadataDictionary metadata, DateTime expireAt) {
+            metadata[Constants.Documents.Metadata.Expires] = expireAt.ToString("O");
         }
 
         private static void SetExpiry(IMetadataDictionary metadata, TimeSpan expireIn) {
