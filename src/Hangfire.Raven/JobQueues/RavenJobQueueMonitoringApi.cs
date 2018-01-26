@@ -24,6 +24,7 @@ namespace Hangfire.Raven.JobQueues {
             using (var repository = _storage.Repository.OpenSession()) {
                 return repository.Query<JobQueue>()
                     .Select(x => x.Queue)
+                    .Distinct()
                     .ToList();
             }
         }
