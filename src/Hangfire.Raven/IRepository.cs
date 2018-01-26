@@ -15,6 +15,6 @@ namespace Hangfire.Raven {
         void ExecuteIndexes(List<AbstractIndexCreationTask> indexes);
         string GetId(Type type, params string[] id);
         IDocumentSession OpenSession();
-        OperationExecutor GetOperationExecutor();
+        IDocumentStore GetStore();
     }
 }

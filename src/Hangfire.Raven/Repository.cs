@@ -89,7 +89,7 @@ namespace Hangfire.Raven {
 
         IDocumentSession IRepository.OpenSession() => _documentStore.OpenSession();
 
-        OperationExecutor IRepository.GetOperationExecutor() => _documentStore.Operations;
+        IDocumentStore IRepository.GetStore() => _documentStore;
 
         public string GetId(Type type, params string[] id) => type.ToString() + '/' + string.Join("/", id);
     }
