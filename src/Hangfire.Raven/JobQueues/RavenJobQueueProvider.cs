@@ -12,8 +12,8 @@ namespace Hangfire.Raven.JobQueues
 
         public RavenJobQueueProvider([NotNull] RavenStorage storage, [NotNull] RavenStorageOptions options)
         {
-            storage.ThrowIfNull("storage");
-            options.ThrowIfNull("options");
+            storage.ThrowIfNull(nameof(storage));
+            options.ThrowIfNull(nameof(options));
 
             _jobQueue = new RavenJobQueue(storage, options);
             _monitoringApi = new RavenJobQueueMonitoringApi(storage);
