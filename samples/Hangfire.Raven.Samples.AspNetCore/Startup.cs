@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Raven.Storage;
 using Microsoft.AspNetCore.Builder;
@@ -47,23 +48,26 @@ namespace Hangfire.Raven.Samples.AspNetCore {
             app.UseStaticFiles();
 
             // Add Hangfire Server and Dashboard support
-            app.UseHangfireServer(new BackgroundJobServerOptions() { Queues = new[] { "default", "testing" }, WorkerCount = 1 });
+            app.UseHangfireServer(new BackgroundJobServerOptions() { Queues = new[] { "default", "testing" } });
             app.UseHangfireDashboard();
 
             // Run once
             BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
 
-            BackgroundJob.Enqueue(() => Test());
+            BackgroundJob.Enqueue(() => QueueTest());
 
             BackgroundJob.Schedule(() => System.Console.WriteLine("Scheduled Job: Hello, I am delayed world!"), new System.TimeSpan(0, 1, 0));
 
             // Run every minute
-            RecurringJob.AddOrUpdate(() => Test(), Cron.Minutely);
+            RecurringJob.AddOrUpdate(() => CronTest(), Cron.Minutely);
 
             
-            Task.Run(() => {
-                for (int i = 0; i < 100; i++)
+            Task.Delay(1000).ContinueWith((task) => {
+                for (int i = 0; i < 300; i++)
                     BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello stressed world!"));
+
+                for (int i = 0; i < 100; i++)
+                    BackgroundJob.Enqueue(() => WorkerCountTest());
             });
 
             app.UseMvc(routes => {
@@ -75,10 +79,18 @@ namespace Hangfire.Raven.Samples.AspNetCore {
 
         public static int x = 0;
 
-        [AutomaticRetry(Attempts = 2, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
-        public static void Test() {
+        [AutomaticRetry(Attempts = 2, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        public static void CronTest() {
             Debug.WriteLine($"{x++} Cron Job: Hello, world!");
-            //throw new ArgumentException("fail");
+        }
+
+        [Queue("testing")]
+        public static void QueueTest() {
+            Debug.WriteLine($"{x++} Queue test Job: Hello, world!");
+        }
+
+        public static void WorkerCountTest() {
+            Thread.Sleep(5000);
         }
     }
 }
