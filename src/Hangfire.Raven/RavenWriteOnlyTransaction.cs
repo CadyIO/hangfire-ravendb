@@ -266,7 +266,9 @@ namespace Hangfire.Raven {
             key.ThrowIfNull("key");
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
-            _session.RemoveExpiry<RavenHash>(id);
+            var hash = FindOrCreateHash(id);
+
+            _session.RemoveExpiry(hash);
         }
 
 
