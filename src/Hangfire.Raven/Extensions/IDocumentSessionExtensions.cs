@@ -31,10 +31,21 @@ namespace Hangfire.Raven.Extensions {
             metadata[Constants.Documents.Metadata.Expires] = (DateTime.UtcNow + expireIn).ToString("O");
         }
 
+
+
         public static void RemoveExpiry<T>(this IDocumentSession session, string id) {
-            var metadata = session.GetMetadataForId<T>(id);
+            RemoveExpiry(session.GetMetadataForId<T>(id));
+        }
+
+        public static void RemoveExpiry<T>(this IDocumentSession session, T obj) {
+            RemoveExpiry(session.GetMetadataForObject(obj));
+        }
+
+        public static void RemoveExpiry(IMetadataDictionary metadata) {
             metadata.Remove(Constants.Documents.Metadata.Expires);
         }
+
+
 
         public static DateTime? GetExpiry<T>(this IDocumentSession session, string id) {
             return GetExpiry(session.GetMetadataForId<T>(id));
