@@ -18,6 +18,8 @@ namespace Hangfire.Raven.JobQueues {
 
         private readonly RavenStorageOptions _options;
 
+        static readonly object _lockObject = new object();
+
         public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options) {
             storage.ThrowIfNull("storage");
             options.ThrowIfNull("options");
@@ -46,19 +48,22 @@ namespace Hangfire.Raven.JobQueues {
                 var fetchCondition = fetchConditions[currentQueryIndex];
                 using (var session = _storage.Repository.OpenSession()) {
                     session.Advanced.UseOptimisticConcurrency = true;
-                    foreach (var queue in queues) {
-                        var job = session.Query<JobQueue>()
+                    lock (_lockObject) {
+                        foreach (var queue in queues) {
+                            var job = session.Query<JobQueue>()
+                                .Customize(x => x.WaitForNonStaleResults())
                                 .Where(fetchCondition.Compile())
                                 .Where(j => j.Queue == queue)
                                 .FirstOrDefault();
 
-                        if(job != null) {
-                            try {
-                                job.FetchedAt = DateTime.UtcNow;
-                                session.SaveChanges();
-                                return new RavenFetchedJob(_storage, job);
-                            } catch(ConcurrencyException) {
+                            if (job != null) {
+                                try {
+                                    job.FetchedAt = DateTime.UtcNow;
+                                    session.SaveChanges();
+                                    return new RavenFetchedJob(_storage, job);
+                                } catch (ConcurrencyException) {
 
+                                }
                             }
                         }
                     }
