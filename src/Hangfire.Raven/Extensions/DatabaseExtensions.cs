@@ -7,9 +7,9 @@ namespace Hangfire.Raven.Extensions {
     {
         public static bool DatabaseExists(this IDocumentStore documentStore, string database)
         {
-            var operation = new GetDatabaseNamesOperation(0, 25);
-            string[] databaseNames = documentStore.Maintenance.Server.Send(operation);
-            return databaseNames.Contains(database);
+            var operation = new GetDatabaseRecordOperation(database);
+            var databaseRecord = documentStore.Maintenance.Server.Send(operation);
+            return databaseRecord != null;
         }
     }
 }
