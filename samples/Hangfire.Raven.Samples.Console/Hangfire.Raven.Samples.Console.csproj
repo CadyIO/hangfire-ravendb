@@ -22,7 +22,8 @@
     <RepositoryUrl>https://github.com/CadyIO/hangfire-ravendb</RepositoryUrl>
     <ApplicationIcon />
     <OutputTypeEx>exe</OutputTypeEx>
-    <StartupObject>Hangfire.Raven.Samples.Console.Program</StartupObject>
+    <StartupObject></StartupObject>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
