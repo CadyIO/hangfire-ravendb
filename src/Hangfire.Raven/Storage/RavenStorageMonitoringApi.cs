@@ -187,7 +187,7 @@ namespace Hangfire.Raven.Storage {
                 (jsonJob, job, stateData) => new ProcessingJobDto {
                     Job = job,
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
-                    StartedAt = JobHelper.DeserializeDateTime(stateData["StartedAt"])
+                    StartedAt = stateData.ContainsKey("StartedAt") ? JobHelper.DeserializeDateTime(stateData["StartedAt"]) : default(DateTime)
                 });
         }
         public JobList<SucceededJobDto> SucceededJobs(int from, int count) {
