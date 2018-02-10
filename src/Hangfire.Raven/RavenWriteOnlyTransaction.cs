@@ -45,8 +45,9 @@ namespace Hangfire.Raven {
                 _session.Dispose();
             } catch {
                 Logger.Error("- Concurrency exception");
+                _session.Dispose();
                 throw;
-            }
+            } 
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn) {
