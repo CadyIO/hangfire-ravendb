@@ -16,6 +16,7 @@
     <PackageTags>Hangfire;AspNet;MVC;OWIN;RavenDB;Long-Running;Background;Fire-And-Forget;Delayed;Recurring;Tasks;Jobs;Scheduler;Threading;Queues</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/CadyIO/hangfire-ravendb</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.Core" Version="1.6.17" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RavenDB.Client" Version="4.0.0-rc-40025" />
+    <PackageReference Include="RavenDB.Client" Version="4.0.0" />
   </ItemGroup>
 
 </Project>
