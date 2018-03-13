@@ -25,6 +25,8 @@ using Hangfire.Raven.Storage;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Hangfire.Raven.Extensions;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Commands.Batches;
 
 namespace Hangfire.Raven {
     public class RavenConnection : JobStorageConnection {
@@ -266,33 +268,35 @@ namespace Hangfire.Raven {
         public override void RemoveServer(string serverId) {
             serverId.ThrowIfNull(nameof(serverId));
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenServer), serverId);
 
-                repository.Delete(id);
+                session.Delete(id);
 
-                repository.SaveChanges();
+                session.SaveChanges();
             }
         }
 
         public override void Heartbeat(string serverId) {
             serverId.ThrowIfNull(nameof(serverId));
 
-            using (var repository = _storage.Repository.OpenSession()) {
+            using (var session = _storage.Repository.OpenSession()) {
                 var id = _storage.Repository.GetId(typeof(RavenServer), serverId);
-                var server = repository.Load<RavenServer>(id);
+
+                //todo rewrite as patch
+                var server = session.Load<RavenServer>(id);
 
                 if (server == null) {
                     server = new RavenServer {
                         Id = id
                     };
 
-                    repository.Store(server);
+                    session.Store(server);
                 }
 
                 server.LastHeartbeat = DateTime.UtcNow;
 
-                repository.SaveChanges();
+                session.SaveChanges();
             }
         }
 
