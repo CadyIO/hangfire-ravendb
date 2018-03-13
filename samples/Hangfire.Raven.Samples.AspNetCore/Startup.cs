@@ -63,7 +63,7 @@ namespace Hangfire.Raven.Samples.AspNetCore {
 
             
             Task.Delay(1000).ContinueWith((task) => {
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < 50; i++)
                     BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello stressed world!"));
 
                 for (int i = 0; i < 100; i++)
