@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard1.6;netstandard1.5;netstandard1.4;netstandard1.3</TargetFrameworks>
-    <Version>4.0.3.0-beta</Version>
+    <Version>4.0.3.3-beta</Version>
     <AssemblyVersion>4.0.1.1</AssemblyVersion>
     <FileVersion>4.0.1.1</FileVersion>
     <Description>RavenDB job storage for Hangfire</Description>
@@ -27,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.Core" Version="1.6.17" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="RavenDB.Client" Version="4.0.3-patch-40031" />
+    <PackageReference Include="RavenDB.Client" Version="4.0.3-patch-40033" />
   </ItemGroup>
 
   <ItemGroup>
