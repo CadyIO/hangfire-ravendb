@@ -58,6 +58,8 @@ namespace Hangfire.Raven.Samples.AspNetCore {
 
             BackgroundJob.Schedule(() => System.Console.WriteLine("Scheduled Job: Hello, I am delayed world!"), new System.TimeSpan(0, 1, 0));
 
+            BackgroundJob.Enqueue(() => FailingTest());
+
             // Run every minute
             RecurringJob.AddOrUpdate(() => CronTest(), Cron.Minutely);
 
@@ -88,6 +90,13 @@ namespace Hangfire.Raven.Samples.AspNetCore {
         public static void QueueTest() {
             Debug.WriteLine($"{x++} Queue test Job: Hello, world!");
         }
+
+        [Queue("testing")]
+        public static void FailingTest() {
+            Debug.WriteLine($"{x++} Requeue test!");
+            throw new System.Exception();
+        }
+
 
         public static void WorkerCountTest() {
             Thread.Sleep(5000);
