@@ -20,6 +20,11 @@ namespace Hangfire.Raven.JobQueues {
 
         static readonly object _lockObject = new object();
 
+        // This is an optimization that helps to overcome the polling delay, when
+        // both client and server reside in the same process. Everything is working
+        // without this event, but it helps to reduce the delays in processing.
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options) {
             storage.ThrowIfNull("storage");
             options.ThrowIfNull("options");
@@ -71,7 +76,7 @@ namespace Hangfire.Raven.JobQueues {
 
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
                 if (currentQueryIndex == fetchConditions.Length - 1) {
-                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                    WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
             }

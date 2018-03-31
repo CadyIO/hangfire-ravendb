@@ -15,6 +15,7 @@ using Raven.Client;
 using Hangfire.Raven.Extensions;
 using System.Threading.Tasks;
 using System.Threading;
+using Hangfire.Raven.JobQueues;
 
 namespace Hangfire.Raven {
     public class RavenWriteOnlyTransaction
@@ -24,6 +25,8 @@ namespace Hangfire.Raven {
         private readonly RavenStorage _storage;
         private IDocumentSession _session;
         private List<KeyValuePair<string, PatchRequest>> _patchRequests;
+
+        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
 
         public RavenWriteOnlyTransaction([NotNull] RavenStorage storage) {
             storage.ThrowIfNull(nameof(storage));
@@ -48,7 +51,11 @@ namespace Hangfire.Raven {
                 Logger.Error("- Concurrency exception");
                 _session.Dispose();
                 throw;
-            } 
+            }
+
+            foreach (var command in _afterCommitCommandQueue) {
+                command();
+            }
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn) {
@@ -103,6 +110,10 @@ namespace Hangfire.Raven {
             var persistentQueue = provider.GetJobQueue();
 
             persistentQueue.Enqueue(queue, jobId);
+
+            if (persistentQueue.GetType() == typeof(RavenJobQueue)) {
+                _afterCommitCommandQueue.Enqueue(() => RavenJobQueue.NewItemInQueueEvent.Set());
+            }
         }
 
         public override void IncrementCounter(string key) => IncrementCounter(key, TimeSpan.MinValue);
