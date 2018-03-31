@@ -7,6 +7,7 @@ using Raven.Client.ServerWide;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Operations.Expiration;
 
 namespace Hangfire.Raven {
     public class RepositoryConfig {
@@ -83,6 +84,10 @@ namespace Hangfire.Raven {
             }
 
             _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
+            _documentStore.Maintenance.Send(new ConfigureExpirationOperation(new ExpirationConfiguration {
+                Disabled = false,
+                DeleteFrequencyInSec = 60
+            }));
         }
 
         public void Dispose() => _documentStore.Dispose();
