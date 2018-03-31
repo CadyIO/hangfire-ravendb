@@ -32,6 +32,7 @@ namespace Hangfire.Raven {
             _patchRequests = new List<KeyValuePair<string, PatchRequest>>();
             _session = _storage.Repository.OpenSession();
             _session.Advanced.UseOptimisticConcurrency = true;
+            _session.Advanced.MaxNumberOfRequestsPerSession = int.MaxValue;
         }
 
         public override void Commit() {
