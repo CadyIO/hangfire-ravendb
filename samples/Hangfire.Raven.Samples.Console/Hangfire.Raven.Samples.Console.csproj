@@ -39,9 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.Core" Version="1.6.17" />
+    <PackageReference Include="Hangfire.Core" Version="1.6.19" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="RavenDB.Client" Version="4.0.3-patch-40034" />
+    <PackageReference Include="RavenDB.Client" Version="4.0.3" />
   </ItemGroup>
 
 </Project>
