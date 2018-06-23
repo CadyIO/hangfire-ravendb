@@ -25,15 +25,7 @@
     <StartupObject></StartupObject>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="app.config" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="app.config" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Raven\Hangfire.Raven.csproj" />
   </ItemGroup>
@@ -41,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.Core" Version="1.6.19" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="RavenDB.Client" Version="4.0.3" />
+    <PackageReference Include="RavenDB.Client" Version="4.0.5" />
   </ItemGroup>
 
 </Project>
