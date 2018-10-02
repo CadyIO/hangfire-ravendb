@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
+using Hangfire.Raven.JobQueues;
 using Hangfire.Raven.Storage;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -21,6 +22,7 @@ namespace Hangfire.Raven
         private readonly RavenStorage _storage;
         private IDocumentSession _session;
         private List<KeyValuePair<string, PatchRequest>> _patchRequests;
+        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
 
         public RavenWriteOnlyTransaction([NotNull] RavenStorage storage)
         {
@@ -42,6 +44,11 @@ namespace Hangfire.Raven
 
                 foreach (var item in toPatch) {
                     _session.Advanced.DocumentStore.DatabaseCommands.Patch(item.Key, item.ToArray());
+                }
+
+                foreach (var command in _afterCommitCommandQueue)
+                {
+                    command();
                 }
             } catch {
                 Logger.Error("- Concurrency exception");
@@ -114,6 +121,11 @@ namespace Hangfire.Raven
             var persistentQueue = provider.GetJobQueue();
 
             persistentQueue.Enqueue(queue, jobId);
+
+            if (persistentQueue.GetType() == typeof(RavenJobQueue))
+            {
+                _afterCommitCommandQueue.Enqueue(() => RavenJobQueue.NewItemInQueueEvent.Set());
+            }
         }
 
         public override void IncrementCounter(string key)

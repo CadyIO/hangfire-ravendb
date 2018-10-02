@@ -17,6 +17,11 @@ namespace Hangfire.Raven.JobQueues
     {
         private static readonly ILog Logger = LogProvider.For<RavenJobQueue>();
 
+        // This is an optimization that helps to overcome the polling delay, when
+        // both client and server reside in the same process. Everything is working
+        // without this event, but it helps to reduce the delays in processing.
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         private readonly RavenStorage _storage;
 
         private readonly RavenStorageOptions _options;
@@ -92,7 +97,7 @@ namespace Hangfire.Raven.JobQueues
                 {
                     if (currentQueryIndex == fetchConditions.Length - 1)
                     {
-                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                        WaitHandle.WaitAny(new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
