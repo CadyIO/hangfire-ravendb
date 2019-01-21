@@ -1,4 +1,5 @@
 ﻿using Hangfire.Annotations;
+using Hangfire.Raven.Extensions;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage;
 
@@ -32,13 +33,13 @@ namespace Hangfire.Raven.Entities
 
         public void RemoveFromQueue()
         {
-            using (var repository = _storage.Repository.OpenSession()) {
-                var job = repository.Load<JobQueue>(Id);
+            using (var session = _storage.Repository.OpenSession()) {
+                var job = session.Load<JobQueue>(Id);
 
                 if (job != null) {
-                    repository.Delete(job);
+                    session.Delete(job);
+                    session.SaveChanges();
                 }
-                repository.SaveChanges();
             }
 
             _removedFromQueue = true;
@@ -50,9 +51,6 @@ namespace Hangfire.Raven.Entities
                 var job = repository.Load<JobQueue>(Id);
 
                 job.FetchedAt = null;
-
-                repository.Store(job);
-                repository.SaveChanges();
             }
 
             _requeued = true;

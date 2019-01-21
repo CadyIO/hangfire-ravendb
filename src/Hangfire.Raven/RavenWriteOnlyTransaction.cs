@@ -7,67 +7,70 @@ using Hangfire.Raven.Storage;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
-using Raven.Abstractions.Data;
-using Raven.Client;
 using Hangfire.Logging;
+using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Commands.Batches;
+using Raven.Client;
+using Hangfire.Raven.Extensions;
+using System.Threading.Tasks;
+using System.Threading;
+using Hangfire.Raven.JobQueues;
 
-namespace Hangfire.Raven
-{
+namespace Hangfire.Raven {
     public class RavenWriteOnlyTransaction
-        : JobStorageTransaction
-    {
+        : JobStorageTransaction {
         private static readonly ILog Logger = LogProvider.For<RavenWriteOnlyTransaction>();
 
         private readonly RavenStorage _storage;
         private IDocumentSession _session;
         private List<KeyValuePair<string, PatchRequest>> _patchRequests;
 
-        public RavenWriteOnlyTransaction([NotNull] RavenStorage storage)
-        {
-            storage.ThrowIfNull("storage");
+        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
+
+        public RavenWriteOnlyTransaction([NotNull] RavenStorage storage) {
+            storage.ThrowIfNull(nameof(storage));
             _storage = storage;
 
             _patchRequests = new List<KeyValuePair<string, PatchRequest>>();
             _session = _storage.Repository.OpenSession();
             _session.Advanced.UseOptimisticConcurrency = true;
+            _session.Advanced.MaxNumberOfRequestsPerSession = int.MaxValue;
         }
 
-        public override void Commit()
-        {
+        public override void Commit() {
+            var toPatch = _patchRequests.ToLookup(a => a.Key, a => a.Value);
+            foreach (var item in toPatch)
+                foreach (var patch in item.Select(x => new PatchCommandData(item.Key, null, x, null)))
+                    _session.Advanced.Defer(patch);
+
             try {
                 _session.SaveChanges();
                 _session.Dispose();
-
-                var toPatch = _patchRequests.ToLookup(a => a.Key, a => a.Value);
-
-                foreach (var item in toPatch) {
-                    _session.Advanced.DocumentStore.DatabaseCommands.Patch(item.Key, item.ToArray());
-                }
             } catch {
                 Logger.Error("- Concurrency exception");
-
+                _session.Dispose();
                 throw;
+            }
+
+            foreach (var command in _afterCommitCommandQueue) {
+                command();
             }
         }
 
-        public override void ExpireJob(string jobId, TimeSpan expireIn)
-        {
+        public override void ExpireJob(string jobId, TimeSpan expireIn) {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
-            var result = _session.Load<RavenJob>(id);
 
-            _session.Advanced.AddExpire(result, DateTime.UtcNow + expireIn);
+            _session.SetExpiry<RavenJob>(id, expireIn);
         }
 
-        public override void PersistJob(string jobId)
-        {
+        public override void PersistJob(string jobId) {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
-            var result = _session.Load<RavenJob>(id);
 
-            _session.Advanced.RemoveExpire(result);
+            _session.RemoveExpiry<RavenJob>(id);
         }
 
-        public override void SetJobState(string jobId, IState state)
-        {
+        public override void SetJobState(string jobId, IState state) {
             var id = _storage.Repository.GetId(typeof(RavenJob), jobId);
             var result = _session.Load<RavenJob>(id);
 
@@ -85,182 +88,128 @@ namespace Hangfire.Raven
             };
         }
 
-        public override void AddJobState(string jobId, IState state)
-        {
+        public override void AddJobState(string jobId, IState state) {
             SetJobState(jobId, state);
         }
 
-        public override void AddRangeToSet(string key, IList<string> items)
-        {
-            key.ThrowIfNull("key");
-            items.ThrowIfNull("items");
+        public override void AddRangeToSet(string key, IList<string> items) {
+            key.ThrowIfNull(nameof(key));
+            items.ThrowIfNull(nameof(items));
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
-            var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
-                Id = id
-            };
-
-            _session.Store(set);
+            var set = FindOrCreateSet(id);
 
             foreach (var item in items) {
                 set.Scores[item] = 0.0;
             }
         }
 
-        public override void AddToQueue(string queue, string jobId)
-        {
+        public override void AddToQueue(string queue, string jobId) {
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
 
             persistentQueue.Enqueue(queue, jobId);
+
+            if (persistentQueue.GetType() == typeof(RavenJobQueue)) {
+                _afterCommitCommandQueue.Enqueue(() => RavenJobQueue.NewItemInQueueEvent.Set());
+            }
         }
 
-        public override void IncrementCounter(string key)
-        {
-            IncrementCounter(key, TimeSpan.MinValue);
-        }
+        public override void IncrementCounter(string key) => IncrementCounter(key, TimeSpan.MinValue);
 
-        public override void IncrementCounter(string key, TimeSpan expireIn)
-        {
+        public override void IncrementCounter(string key, TimeSpan expireIn) => UpdateCounter(key, expireIn, 1);
+
+        public override void DecrementCounter(string key) => DecrementCounter(key, TimeSpan.MinValue);
+
+        public override void DecrementCounter(string key, TimeSpan expireIn) => UpdateCounter(key, expireIn, -1);
+
+        public void UpdateCounter(string key, TimeSpan expireIn, int value) {
             var id = _storage.Repository.GetId(typeof(Counter), key);
 
             if (_session.Load<Counter>(id) == null) {
                 var counter = new Counter() {
                     Id = id,
-                    Value = 1
+                    Value = value
                 };
 
                 _session.Store(counter);
 
-                if (expireIn != TimeSpan.MinValue) {
-                    _session.Advanced.AddExpire(counter, DateTime.UtcNow + expireIn);
-                }
+                if (expireIn != TimeSpan.MinValue)
+                    _session.SetExpiry(counter, expireIn);
+
             } else {
                 _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
-                    Type = PatchCommandType.Inc,
-                    Name = "Value",
-                    Value = 1
+                    Script = $@"this.Value += {value}"
                 }));
             }
         }
 
-        public override void DecrementCounter(string key)
-        {
-            DecrementCounter(key, TimeSpan.MinValue);
-        }
-
-        public override void DecrementCounter(string key, TimeSpan expireIn)
-        {
-            var id = _storage.Repository.GetId(typeof(Counter), key);
-
-            if (_session.Load<Counter>(id) == null) {
-                var counter = new Counter() {
-                    Id = id,
-                    Value = -1
-                };
-
-                _session.Store(counter);
-
-                if (expireIn != TimeSpan.MinValue) {
-                    _session.Advanced.AddExpire(counter, DateTime.UtcNow + expireIn);
-                }
-            } else {
-                _patchRequests.Add(new KeyValuePair<string, PatchRequest>(id, new PatchRequest() {
-                    Type = PatchCommandType.Inc,
-                    Name = "Value",
-                    Value = -1
-                }));
-            }
-        }
-
-        public override void AddToSet(string key, string value)
-        {
+        public override void AddToSet(string key, string value) {
             AddToSet(key, value, 0.0);
         }
 
-        public override void AddToSet(string key, string value, double score)
-        {
+        public override void AddToSet(string key, string value, double score) {
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
-
-            var set = _session.Load<RavenSet>(id) ?? new RavenSet() {
-                Id = id
-            };
-
-            _session.Store(set);
+            var set = FindOrCreateSet(id);
 
             set.Scores[value] = score;
         }
 
-        public override void RemoveFromSet(string key, string value)
-        {
+        public override void RemoveFromSet(string key, string value) {
+            key.ThrowIfNull(nameof(key));
+
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
-
-            var set = _session.Load<RavenSet>(id);
-
-            if (set == null) {
-                return;
-            }
+            var set = FindOrCreateSet(id);
 
             set.Scores.Remove(value);
 
-            if (set.Scores.Count == 0) {
+            if (set.Scores.Count == 0)
                 _session.Delete(set);
-            }
+
         }
 
-        public override void RemoveSet(string key)
-        {
-            key.ThrowIfNull("key");
+        public override void RemoveSet(string key) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
 
             _session.Delete(id);
         }
 
-        public override void ExpireSet([NotNull] string key, TimeSpan expireIn)
-        {
-            key.ThrowIfNull("key");
+        public override void ExpireSet([NotNull] string key, TimeSpan expireIn) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
-            var set = _session.Load<RavenSet>(id);
+            var set = FindOrCreateSet(id);
 
-            _session.Advanced.AddExpire(set, DateTime.UtcNow + expireIn);
+            _session.SetExpiry(set, expireIn);
         }
 
-        public override void PersistSet([NotNull] string key)
-        {
-            key.ThrowIfNull("key");
+        public override void PersistSet([NotNull] string key) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenSet), key);
-            var set = _session.Load<RavenSet>(id);
+            var set = FindOrCreateSet(id);
 
-            _session.Advanced.RemoveExpire(set);
+            _session.RemoveExpiry(set);
         }
 
 
-        public override void InsertToList(string key, string value)
-        {
+        public override void InsertToList(string key, string value) {
+            key.ThrowIfNull(nameof(key));
+
             var id = _storage.Repository.GetId(typeof(RavenList), key);
-
-            var list = _session.Load<RavenList>(id) ?? new RavenList() {
-                Id = id
-            };
-
-            _session.Store(list);
+            var list = FindOrCreateList(id);
 
             list.Values.Add(value);
         }
 
-        public override void RemoveFromList(string key, string value)
-        {
+        public override void RemoveFromList(string key, string value) {
+            key.ThrowIfNull(nameof(key));
+
             var id = _storage.Repository.GetId(typeof(RavenList), key);
-
-            var list = _session.Load<RavenList>(id);
-
-            if (list == null) {
-                return;
-            }
+            var list = FindOrCreateList(id);
 
             list.Values.RemoveAll(v => v == value);
 
@@ -269,15 +218,9 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
-        {
+        public override void TrimList(string key, int keepStartingFrom, int keepEndingAt) {
             var id = _storage.Repository.GetId(typeof(RavenList), key);
-
-            var list = _session.Load<RavenList>(id);
-
-            if (list == null) {
-                return;
-            }
+            var list = FindOrCreateList(id);
 
             list.Values = list.Values.Skip(keepStartingFrom).Take(keepEndingAt - keepStartingFrom + 1).ToList();
 
@@ -286,73 +229,75 @@ namespace Hangfire.Raven
             }
         }
 
-        public override void ExpireList(string key, TimeSpan expireIn)
-        {
-            key.ThrowIfNull("key");
+        public override void ExpireList(string key, TimeSpan expireIn) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenList), key);
-            var list = _session.Load<RavenList>(id);
+            var list = FindOrCreateList(id);
 
-            _session.Advanced.AddExpire(list, DateTime.UtcNow + expireIn);
+            _session.SetExpiry(list, expireIn);
         }
 
-        public override void PersistList(string key)
-        {
-            key.ThrowIfNull("key");
+        public override void PersistList(string key) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenList), key);
-            var list = _session.Load<RavenList>(id);
+            var list = FindOrCreateList(id);
 
-            _session.Advanced.RemoveExpire(list);
+            _session.RemoveExpiry(list);
         }
 
-        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
-        {
-            key.ThrowIfNull("key");
-            keyValuePairs.ThrowIfNull("keyValuePairs");
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs) {
+            key.ThrowIfNull(nameof(key));
+            keyValuePairs.ThrowIfNull(nameof(keyValuePairs));
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
-            var result = _session.Load<RavenHash>(id);
-
-            // Not exists? Insert
-            if (result == null) {
-                result = new RavenHash() {
-                    Id = id
-                };
-
-                _session.Store(result);
-            }
+            var result = FindOrCreateHash(id);
 
             foreach (var keyValuePair in keyValuePairs) {
                 result.Fields[keyValuePair.Key] = keyValuePair.Value;
             }
         }
 
-        public override void RemoveHash(string key)
-        {
-            key.ThrowIfNull("key");
+        public override void RemoveHash(string key) {
+            key.ThrowIfNull(nameof(key));
 
             _session.Delete(_storage.Repository.GetId(typeof(RavenHash), key));
         }
 
-        public override void ExpireHash(string key, TimeSpan expireIn)
-        {
-            key.ThrowIfNull("key");
+        public override void ExpireHash(string key, TimeSpan expireIn) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
-            var set = _session.Load<RavenHash>(id);
+            var hash = FindOrCreateHash(id);
 
-            _session.Advanced.AddExpire(set, DateTime.UtcNow + expireIn);
+            _session.SetExpiry(hash, expireIn);
         }
 
-        public override void PersistHash([NotNull] string key)
-        {
-            key.ThrowIfNull("key");
+        public override void PersistHash([NotNull] string key) {
+            key.ThrowIfNull(nameof(key));
 
             var id = _storage.Repository.GetId(typeof(RavenHash), key);
-            var set = _session.Load<RavenHash>(id);
+            var hash = FindOrCreateHash(id);
 
-            _session.Advanced.RemoveExpire(set);
+            _session.RemoveExpiry(hash);
         }
+
+
+
+        private RavenSet FindOrCreateSet(string id) => FindOrCreate(id, () => new RavenSet() { Id = id });
+        private RavenHash FindOrCreateHash(string id) => FindOrCreate(id, () => new RavenHash() { Id = id });
+
+        private RavenList FindOrCreateList(string id) => FindOrCreate(id, () => new RavenList() { Id = id });
+
+        private T FindOrCreate<T>(string id, Func<T> builder) {
+            var obj = _session.Load<T>(id);
+            if (obj == null) {
+                obj = builder.Invoke();
+                _session.Store(obj);
+            }
+            return obj;
+        }
+
     }
 }
