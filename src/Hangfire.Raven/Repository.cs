@@ -41,7 +41,7 @@ namespace Hangfire.Raven {
     public class Repository : IRepository {
         private DocumentStore _documentStore;
 
-        private string _database;
+        private readonly string _database;
 
         public Repository(RepositoryConfig config) {
             if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
