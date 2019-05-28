@@ -104,5 +104,73 @@ namespace Hangfire.Raven.Storage
 
             return configuration.UseStorage(storage);
         }
+
+#if NETFULL
+        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration)
+        {
+            configuration.ThrowIfNull("configuration");
+
+            var config = new RepositoryConfig()
+            {
+                Embedded = true
+            };
+
+            var storage = new RavenStorage(config);
+
+            return configuration.UseStorage(storage);
+        }
+
+        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration, string connectionStringName)
+        {
+            configuration.ThrowIfNull("configuration");
+
+            var config = new RepositoryConfig()
+            {
+                Embedded = true,
+                ConnectionStringName = connectionStringName
+            };
+
+            var storage = new RavenStorage(config);
+
+            return configuration.UseStorage(storage);
+        }
+
+        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database)
+        {
+            configuration.ThrowIfNull("configuration");
+            configuration.ThrowIfNull("connectionUrl");
+            configuration.ThrowIfNull("database");
+
+            var config = new RepositoryConfig()
+            {
+                Embedded = true,
+                ConnectionUrl = connectionUrl,
+                Database = database
+            };
+
+            var storage = new RavenStorage(config);
+
+            return configuration.UseStorage(storage);
+        }
+
+        public static IGlobalConfiguration<RavenStorage> UseEmbeddedRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database, RavenStorageOptions options)
+        {
+            configuration.ThrowIfNull("configuration");
+            configuration.ThrowIfNull("connectionUrl");
+            configuration.ThrowIfNull("database");
+            configuration.ThrowIfNull("options");
+
+            var config = new RepositoryConfig()
+            {
+                Embedded = true,
+                ConnectionUrl = connectionUrl,
+                Database = database
+            };
+
+            var storage = new RavenStorage(config, options);
+
+            return configuration.UseStorage(storage);
+        }
+#endif
     }
 }

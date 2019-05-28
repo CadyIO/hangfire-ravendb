@@ -1,7 +1,7 @@
 ﻿using System;
 using Hangfire.Raven.Storage;
 
-namespace Hangfire.Raven.Samples.Console
+namespace Hangfire.Raven.Samples.Embedded
 {
     public static class Program
     {
@@ -11,21 +11,30 @@ namespace Hangfire.Raven.Samples.Console
         {
             try {
                 // you can use Raven Storage and specify the connection string name
-                GlobalConfiguration.Configuration
-                    .UseColouredConsoleLogProvider()
-                    .UseRavenStorage("RavenDebug");
+                //GlobalConfiguration.Configuration
+                //    .UseColouredConsoleLogProvider()
+                //    .UseRavenStorage("RavenDebug");
 
                 // you can use Raven Storage and specify the connection string and database name
                 //GlobalConfiguration.Configuration
                 //    .UseColouredConsoleLogProvider()
                 //    .UseRavenStorage("http://localhost:9090", "HangfireConsole");
 
+                // you can use Raven Embedded Storage which runs in memory!
+                GlobalConfiguration.Configuration
+                    .UseColouredConsoleLogProvider()
+                    .UseEmbeddedRavenStorage();
 
                 //you have to create an instance of background job server at least once for background jobs to run
                 var client = new BackgroundJobServer();
 
-                // Run once
-                BackgroundJob.Enqueue(() => System.Console.WriteLine("Background Job: Hello, world!"));
+                // Run once delayed
+                BackgroundJob.Schedule(() => Console.WriteLine("Delayed Background job:  Hello, world!"), TimeSpan.FromSeconds(20));
+
+                //Run once immediately
+                BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world!"));
+                BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world again!"));
+                BackgroundJob.Enqueue(() => Console.WriteLine("Background Job: Hello, world a third time!"));
 
                 BackgroundJob.Enqueue(() => Test());
 
