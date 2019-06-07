@@ -10,8 +10,10 @@ using System.Linq.Expressions;
 using Raven.Client.Exceptions;
 using Hangfire.Raven.Extensions;
 
-namespace Hangfire.Raven.JobQueues {
-    public class RavenJobQueue : IPersistentJobQueue {
+namespace Hangfire.Raven.JobQueues
+{
+    public class RavenJobQueue : IPersistentJobQueue
+    {
         private static readonly ILog Logger = LogProvider.For<RavenJobQueue>();
 
         private readonly RavenStorage _storage;
@@ -25,7 +27,8 @@ namespace Hangfire.Raven.JobQueues {
         // without this event, but it helps to reduce the delays in processing.
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
-        public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options) {
+        public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options)
+        {
             storage.ThrowIfNull("storage");
             options.ThrowIfNull("options");
 
@@ -34,7 +37,8 @@ namespace Hangfire.Raven.JobQueues {
         }
 
         [NotNull]
-        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken) {
+        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
+        {
             queues.ThrowIfNull(nameof(queues));
 
             if (queues.Length == 0)
@@ -47,26 +51,34 @@ namespace Hangfire.Raven.JobQueues {
             };
             var currentQueryIndex = 0;
 
-            do {
+            do
+            {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var fetchCondition = fetchConditions[currentQueryIndex];
-                using (var session = _storage.Repository.OpenSession()) {
+                using (var session = _storage.Repository.OpenSession())
+                {
                     session.Advanced.UseOptimisticConcurrency = true;
-                    lock (_lockObject) {
-                        foreach (var queue in queues) {
+                    lock (_lockObject)
+                    {
+                        foreach (var queue in queues)
+                        {
                             var job = session.Query<JobQueue>()
                                 .Customize(x => x.WaitForNonStaleResults())
                                 .Where(fetchCondition.Compile())
                                 .Where(j => j.Queue == queue)
                                 .FirstOrDefault();
 
-                            if (job != null) {
-                                try {
+                            if (job != null)
+                            {
+                                try
+                                {
                                     job.FetchedAt = DateTime.UtcNow;
                                     session.SaveChanges();
                                     return new RavenFetchedJob(_storage, job);
-                                } catch (ConcurrencyException) {
+                                }
+                                catch (ConcurrencyException)
+                                {
 
                                 }
                             }
@@ -75,7 +87,8 @@ namespace Hangfire.Raven.JobQueues {
                 }
 
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
-                if (currentQueryIndex == fetchConditions.Length - 1) {
+                if (currentQueryIndex == fetchConditions.Length - 1)
+                {
                     WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
@@ -83,9 +96,12 @@ namespace Hangfire.Raven.JobQueues {
             while (true);
         }
 
-        public void Enqueue(string queue, string jobId) {
-            using (var session = _storage.Repository.OpenSession()) {
-                var jobQueue = new JobQueue {
+        public void Enqueue(string queue, string jobId)
+        {
+            using (var session = _storage.Repository.OpenSession())
+            {
+                var jobQueue = new JobQueue
+                {
                     Id = _storage.Repository.GetId(typeof(JobQueue), queue, jobId),
                     JobId = jobId,
                     Queue = queue
