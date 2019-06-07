@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputType>exe</OutputType>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,25 +22,18 @@
     <RepositoryUrl>https://github.com/CadyIO/hangfire-ravendb</RepositoryUrl>
     <ApplicationIcon />
     <OutputTypeEx>exe</OutputTypeEx>
-    <StartupObject />
+    <StartupObject></StartupObject>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="app.config" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="app.config" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Raven\Hangfire.Raven.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.Core" Version="1.6.17" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RavenDB.Client" Version="3.5.4" />
+    <PackageReference Include="Hangfire.Core" Version="1.6.21" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="RavenDB.Client" Version="4.1.3" />
   </ItemGroup>
 
 </Project>

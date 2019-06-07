@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hangfire.Raven
+namespace Hangfire.Raven.Extensions
 {
     public static class ObjectExtensions
     {

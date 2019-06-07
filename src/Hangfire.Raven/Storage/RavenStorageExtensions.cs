@@ -1,25 +1,23 @@
 ﻿using System;
-using Raven.Client;
-using Raven.Json.Linq;
+using System.Security.Cryptography.X509Certificates;
+using Hangfire.Raven.Extensions;
+using Raven.Client.Documents.Session;
 
-namespace Hangfire.Raven.Storage
-{
+namespace Hangfire.Raven.Storage {
     public static class RavenServerStorageExtensions
     {
-        public static void AddExpire<T>(this ISyncAdvancedSessionOperation advanced, T obj, DateTime dateTime)
+        public static void AddExpire<T>(this IAsyncAdvancedSessionOperations advanced, T obj, DateTime dateTime)
         {
-            advanced.GetMetadataFor(obj)["Raven-Expiration-Date"] = new RavenJValue(dateTime);
+            advanced.GetMetadataFor(obj)["@expires"] = dateTime;
         }
-        public static void RemoveExpire<T>(this ISyncAdvancedSessionOperation advanced, T obj)
+        public static void RemoveExpire<T>(this IAsyncAdvancedSessionOperations advanced, T obj)
         {
             advanced.GetMetadataFor(obj).Remove("Raven-Expiration-Date");
         }
-        public static DateTime? GetExpire<T>(this ISyncAdvancedSessionOperation advanced, T obj)
+        public static DateTime? GetExpire<T>(this IAsyncAdvancedSessionOperations advanced, T obj)
         {
-            RavenJToken token;
-            if (advanced.GetMetadataFor(obj).TryGetValue("Raven-Expiration-Date", out token)) {
-                var date = token.Value<DateTime>();
-                return date;
+            if (advanced.GetMetadataFor(obj).TryGetValue("Raven-Expiration-Date", out object dateTime)) {
+                return (DateTime)dateTime;
             }
             return null;
         }
@@ -27,19 +25,6 @@ namespace Hangfire.Raven.Storage
         public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, RavenStorage storage)
         {
             storage.ThrowIfNull("storage");
-
-            return configuration.UseStorage(storage);
-        }
-
-        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionString)
-        {
-            configuration.ThrowIfNull("configuration");
-            connectionString.ThrowIfNull("connectionString");
-
-            var config = new RepositoryConfig() {
-                ConnectionStringName = connectionString
-            };
-            var storage = new RavenStorage(config);
 
             return configuration.UseStorage(storage);
         }
@@ -63,7 +48,7 @@ namespace Hangfire.Raven.Storage
             return configuration.UseStorage(storage);
         }
 
-        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database, string APIKey)
+        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database, X509Certificate2 certificate)
         {
             configuration.ThrowIfNull("configuration");
             connectionUrl.ThrowIfNull("connectionUrl");
@@ -76,7 +61,7 @@ namespace Hangfire.Raven.Storage
             var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database,
-                ApiKey = APIKey
+                Certificate = certificate
             };
 
             var storage = new RavenStorage(config);

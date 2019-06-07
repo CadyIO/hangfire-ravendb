@@ -5,11 +5,10 @@ using Hangfire.Annotations;
 using Hangfire.Raven.Entities;
 using Hangfire.Raven.Storage;
 using Hangfire.Storage;
-using Raven.Abstractions.Exceptions;
-using Raven.Client.Linq;
 using Hangfire.Logging;
-using Hangfire.Raven.Indexes;
 using System.Linq.Expressions;
+using Raven.Client.Exceptions;
+using Hangfire.Raven.Extensions;
 
 namespace Hangfire.Raven.JobQueues
 {
@@ -17,14 +16,16 @@ namespace Hangfire.Raven.JobQueues
     {
         private static readonly ILog Logger = LogProvider.For<RavenJobQueue>();
 
+        private readonly RavenStorage _storage;
+
+        private readonly RavenStorageOptions _options;
+
+        static readonly object _lockObject = new object();
+
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
         // without this event, but it helps to reduce the delays in processing.
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
-
-        private readonly RavenStorage _storage;
-
-        private readonly RavenStorageOptions _options;
 
         public RavenJobQueue([NotNull] RavenStorage storage, RavenStorageOptions options)
         {
@@ -38,16 +39,12 @@ namespace Hangfire.Raven.JobQueues
         [NotNull]
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
-            queues.ThrowIfNull("queues");
+            queues.ThrowIfNull(nameof(queues));
 
             if (queues.Length == 0)
-            {
-                throw new ArgumentException("Queue array must be non-empty.", "queues");
-            }
+                throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            JobQueue fetchedJob = null;
-
-            var fetchConditions = new Expression<Func<Hangfire_JobQueues.Mapping, bool>>[]
+            var fetchConditions = new Expression<Func<JobQueue, bool>>[]
             {
                 job => job.FetchedAt == null,
                 job => job.FetchedAt < DateTime.UtcNow.AddSeconds(_options.InvisibilityTimeout.Negate().TotalSeconds)
@@ -59,59 +56,49 @@ namespace Hangfire.Raven.JobQueues
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var fetchCondition = fetchConditions[currentQueryIndex];
-
-                foreach (var queue in queues)
+                using (var session = _storage.Repository.OpenSession())
                 {
-                    using (var repository = _storage.Repository.OpenSession())
+                    session.Advanced.UseOptimisticConcurrency = true;
+                    lock (_lockObject)
                     {
-                        foreach (var job in repository.Query<Hangfire_JobQueues.Mapping, Hangfire_JobQueues>()
-                            .Where(fetchCondition)
-                            .Where(job => job.Queue == queue)
-                            .Customize(x => x.WaitForNonStaleResultsAsOfNow())
-                            .OfType<JobQueue>())
+                        foreach (var queue in queues)
                         {
-                            job.FetchedAt = DateTime.UtcNow;
+                            var job = session.Query<JobQueue>()
+                                .Customize(x => x.WaitForNonStaleResults())
+                                .Where(fetchCondition.Compile())
+                                .Where(j => j.Queue == queue)
+                                .FirstOrDefault();
 
-                            try
+                            if (job != null)
                             {
-                                // Did someone else already picked it up?
-                                repository.Advanced.UseOptimisticConcurrency = true;
-                                repository.SaveChanges();
+                                try
+                                {
+                                    job.FetchedAt = DateTime.UtcNow;
+                                    session.SaveChanges();
+                                    return new RavenFetchedJob(_storage, job);
+                                }
+                                catch (ConcurrencyException)
+                                {
 
-                                fetchedJob = job;
-                                break;
-                            }
-                            catch (ConcurrencyException)
-                            {
-                                repository.Advanced.Evict(job); // Avoid subsequent concurrency exceptions
+                                }
                             }
                         }
-                    }
-                    if (fetchedJob != null)
-                    {
-                        break;
-                    }
-                }
-
-                if (fetchedJob == null)
-                {
-                    if (currentQueryIndex == fetchConditions.Length - 1)
-                    {
-                        WaitHandle.WaitAny(new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
+                if (currentQueryIndex == fetchConditions.Length - 1)
+                {
+                    WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
-            while (fetchedJob == null);
-
-            return new RavenFetchedJob(_storage, fetchedJob);
+            while (true);
         }
 
         public void Enqueue(string queue, string jobId)
         {
-            using (var repository = _storage.Repository.OpenSession())
+            using (var session = _storage.Repository.OpenSession())
             {
                 var jobQueue = new JobQueue
                 {
@@ -120,8 +107,8 @@ namespace Hangfire.Raven.JobQueues
                     Queue = queue
                 };
 
-                repository.Store(jobQueue);
-                repository.SaveChanges();
+                session.Store(jobQueue);
+                session.SaveChanges();
             }
         }
     }

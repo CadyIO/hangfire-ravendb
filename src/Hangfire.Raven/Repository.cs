@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hangfire.Raven.Extensions;
-using Hangfire.Raven.Listeners;
-using Raven.Abstractions.Data;
-using Raven.Client;
-using Raven.Client.Document;
-using Raven.Client.Indexes;
-using System.IO;
+using Raven.Client.Documents;
+using Raven.Client.ServerWide.Operations;
+using Raven.Client.ServerWide;
+using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Indexes;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Operations.Expiration;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Hangfire.Raven
 {
     public class RepositoryConfig
     {
-        public string ConnectionStringName { get; set; }
         public string ConnectionUrl { get; set; }
         public string Database { get; set; }
-        public string ApiKey { get; set; }
+        public X509Certificate2 Certificate { get; set; }
     }
 
     public class RepositoryObserver<T>
@@ -48,31 +49,20 @@ namespace Hangfire.Raven
     {
         private DocumentStore _documentStore;
 
-        private string _database;
+        private readonly string _database;
 
         public Repository(RepositoryConfig config)
         {
-            if (!string.IsNullOrEmpty(config.ConnectionStringName)) {
-                _documentStore = new DocumentStore {
-                    ConnectionStringName = config.ConnectionStringName
-                };
-            } else {
-                _documentStore = new DocumentStore {
-                    Url = config.ConnectionUrl,
-                    ApiKey = config.ApiKey,
-                    DefaultDatabase = config.Database
-                };
-            }
+            _documentStore = new DocumentStore
+            {
+                Urls = new[] { config.ConnectionUrl },
+                Database = config.Database,
+                Certificate = config.Certificate
+            };
 
-            _documentStore.Listeners.RegisterListener(new TakeNewestConflictResolutionListener());
-            _documentStore.Initialize(ensureDatabaseExists: false);
+            _documentStore.Initialize();
 
-            _database = _documentStore.DefaultDatabase;
-        }
-
-        public FacetResults GetFacets(string index, IndexQuery query, List<Facet> facets)
-        {
-            return _documentStore.DatabaseCommands.GetFacets(index, query, facets);
+            _database = _documentStore.Database;
         }
 
         public void ExecuteIndexes(List<AbstractIndexCreationTask> indexes)
@@ -80,66 +70,35 @@ namespace Hangfire.Raven
             _documentStore.ExecuteIndexes(indexes);
         }
 
-        public string GetId(Type type, params string[] id)
-        {
-            return _documentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(string.Join("/", id), type, false);
-        }
-
         public void Destroy()
         {
-            if (_database == null || !_documentStore.DatabaseExists(_database)) {
+            if (_database == null || !_documentStore.DatabaseExists(_database))
+            {
                 return;
             }
 
-            _documentStore.DatabaseCommands.GlobalAdmin.DeleteDatabase(_database, hardDelete: true);
+            _documentStore.Maintenance.Server.Send(new DeleteDatabasesOperation(_database, hardDelete: true, fromNode: null, timeToWaitForConfirmation: null));
         }
 
         public void Create()
         {
-            if (_database == null || _documentStore.DatabaseExists(_database)) {
+            if (_database == null || _documentStore.DatabaseExists(_database))
+            {
                 return;
             }
 
-            _documentStore
-                .DatabaseCommands
-                .GlobalAdmin
-                .CreateDatabase(new DatabaseDocument {
-                    Id = "Raven/Databases/" + _database,
-                    Settings = {
-                        { "Raven/ActiveBundles", "DocumentExpiration" },
-                        { "Raven/StorageTypeName", "voron" },
-                        { "Raven/DataDir", Path.Combine("~", _database) },
-                    }
-                });
+            _documentStore.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(_database)));
+            _documentStore.Maintenance.Send(new ConfigureExpirationOperation(new ExpirationConfiguration
+            {
+                Disabled = false,
+                DeleteFrequencyInSec = 60
+            }));
         }
 
-        public IDisposable DocumentChange(Type documentType, Action<DocumentChangeNotification> action)
-        {
-            return _documentStore.Changes(_database).ForDocumentsStartingWith(GetId(documentType, ""))
-                .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
-        }
+        public void Dispose() => _documentStore.Dispose();
 
-        public IDisposable DocumentChange(Type documentType, string suffix, Action<DocumentChangeNotification> action)
-        {
-            return _documentStore.Changes(_database).ForDocumentsStartingWith(
-                    GetId(documentType, string.Format("{0}/", suffix))
-                )
-                .Subscribe(new RepositoryObserver<DocumentChangeNotification>(action));
-        }
+        IDocumentSession IRepository.OpenSession() => _documentStore.OpenSession();
 
-        public IDocumentSession OpenSession()
-        {
-            return _documentStore.OpenSession(_database);
-        }
-
-        public IAsyncDocumentSession OpenAsyncSession()
-        {
-            return _documentStore.OpenAsyncSession(_database);
-        }
-
-        public void Dispose()
-        {
-            _documentStore.Dispose();
-        }
+        public string GetId(Type type, params string[] id) => type.ToString() + '/' + string.Join("/", id);
     }
 }
