@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using Hangfire.Raven.Extensions;
 using Raven.Client.Documents.Session;
 
@@ -28,19 +29,6 @@ namespace Hangfire.Raven.Storage {
             return configuration.UseStorage(storage);
         }
 
-        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionString)
-        {
-            configuration.ThrowIfNull("configuration");
-            connectionString.ThrowIfNull("connectionString");
-
-            var config = new RepositoryConfig() {
-                ConnectionStringName = connectionString
-            };
-            var storage = new RavenStorage(config);
-
-            return configuration.UseStorage(storage);
-        }
-
         public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database)
         {
             configuration.ThrowIfNull("configuration");
@@ -60,7 +48,7 @@ namespace Hangfire.Raven.Storage {
             return configuration.UseStorage(storage);
         }
 
-        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database, string APIKey)
+        public static IGlobalConfiguration<RavenStorage> UseRavenStorage(this IGlobalConfiguration configuration, string connectionUrl, string database, X509Certificate2 certificate)
         {
             configuration.ThrowIfNull("configuration");
             connectionUrl.ThrowIfNull("connectionUrl");
@@ -73,7 +61,7 @@ namespace Hangfire.Raven.Storage {
             var config = new RepositoryConfig() {
                 ConnectionUrl = connectionUrl,
                 Database = database,
-                ApiKey = APIKey
+                Certificate = certificate
             };
 
             var storage = new RavenStorage(config);
